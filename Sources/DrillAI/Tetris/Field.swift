@@ -47,7 +47,7 @@ extension Field {
 
         var newStorage = storage
 
-        // Append or OR in the mask
+        // Append or "OR" in the mask
         for (i, mask) in pieceMasks.enumerated() {
             let row = bottomRow + i
             if row >= newStorage.count {
@@ -73,8 +73,8 @@ extension Field {
             }
         }
 
-        return (newField: Field(storage: newStorage, garbageCount: newGarbageCount),
-                garbageCleared: garbageCleared)
+        let newField = Field(storage: newStorage, garbageCount: newGarbageCount)
+        return (newField: newField, garbageCleared: garbageCleared)
     }
 }
 
