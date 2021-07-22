@@ -23,9 +23,8 @@ import Foundation
  */
 
 /*
- Performance note:
- I'm unsure about the performance of this double enum switching, so I'm composing them into plain arrays with my own indexing scheme.
- It might be interesting to compare the performance of calling the above functions vs. arrays.
+ Performance note:  Each of these sets of constants are packed in arrays with custom indexing scheme
+ (piece.typeAndOrientationIndex) to make sure they can be retrieved as efficiently as possible
  */
 
 /// Bitmasks of every piece in every orientation
