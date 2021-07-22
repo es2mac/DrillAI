@@ -8,11 +8,6 @@
 
 import Foundation
 
-/*
- Performance note:
- I'm unsure about the performance of this double enum switching, so I'm composing them into plain arrays with my own indexing scheme.
- It might be interesting to compare the performance of calling the above functions vs. arrays.
- */
 
 /**
  To describe what a tetromino looks like in a particular rotation, here I
@@ -27,8 +22,48 @@ import Foundation
  Ref: https://harddrop.com/wiki/SRS
  */
 
+/*
+ Performance note:
+ I'm unsure about the performance of this double enum switching, so I'm composing them into plain arrays with my own indexing scheme.
+ It might be interesting to compare the performance of calling the above functions vs. arrays.
+ */
+
+/// Bitmasks of every piece in every orientation
+let pieceBitmasks: [[Int16]] = { () -> [[Int16]] in
+    var masks = [[Int16]](repeating: [], count: 7 * 4)
+    for type in Tetromino.allCases {
+        for orientation in Piece.Orientation.allCases {
+            let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
+            masks[piece.typeAndOrientationIndex] = makePieceBitmasks(type: type, orientation: orientation)
+        }
+    }
+    return masks
+}()
+
+
+/// Bitmasks of every piece in every orientation, multi-lined in one Int
+let wholePieceBitmasks: [Int] = pieceBitmasks.map { lines in
+    lines.reversed().reduce(0, { (wholePieceMask, line) in
+        (wholePieceMask << 10) | Int(line)
+    })
+}
+
+
+/// For the box, how far are the 4 box edges are from the piece's center
+let pieceBoundOffsets: [(top: Int, left: Int, right: Int, bottom: Int)] = { () -> [(top: Int, left: Int, right: Int, bottom: Int)] in
+    var offsets = [(top: Int, left: Int, right: Int, bottom: Int)](repeating: (top: 0, left: 0, right: 0, bottom: 0), count: 7 * 4)
+    for type in Tetromino.allCases {
+        for orientation in Piece.Orientation.allCases {
+            let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
+            offsets[piece.typeAndOrientationIndex] = getBoundOffsets(type: type, orientation: orientation)
+        }
+    }
+    return offsets
+}()
+
+
 /// Construct bitmasks of piece for placement check
-func makePieceBitmasks(type: Tetromino, orientation: Piece.Orientation) -> [Int16] {
+private func makePieceBitmasks(type: Tetromino, orientation: Piece.Orientation) -> [Int16] {
     switch (type, orientation) {
     case (.I, .up),    (.I, .down): return [0b1111]
     case (.I, .right), (.I, .left): return [0b1, 0b1, 0b1, 0b1]
@@ -52,25 +87,8 @@ func makePieceBitmasks(type: Tetromino, orientation: Piece.Orientation) -> [Int1
     }
 }
 
-let pieceBitmasks: [[Int16]] = { () -> [[Int16]] in
-    var masks = [[Int16]](repeating: [], count: 7 * 4)
-    for type in Tetromino.allCases {
-        for orientation in Piece.Orientation.allCases {
-            let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
-            masks[piece.typeAndOrientationIndex] = makePieceBitmasks(type: type, orientation: orientation)
-        }
-    }
-    return masks
-}()
 
-let wholePieceBitmasks: [Int] = pieceBitmasks.map { lines in
-    lines.reversed().reduce(0, { (wholePieceMask, line) in
-        (wholePieceMask << 10) | Int(line)
-    })
-}
-
-// How far the minimal box containing the piece need to go from the center
-func getBoundOffsets(type: Tetromino, orientation: Piece.Orientation) -> (top: Int, left: Int, right: Int, bottom: Int) {
+private func getBoundOffsets(type: Tetromino, orientation: Piece.Orientation) -> (top: Int, left: Int, right: Int, bottom: Int) {
     switch (type, orientation) {
     case (.I, .up)   : return (top: 0, left: 1, right: 2, bottom: 0)
     case (.I, .right): return (top: 1, left: 0, right: 0, bottom: 2)
@@ -86,19 +104,8 @@ func getBoundOffsets(type: Tetromino, orientation: Piece.Orientation) -> (top: I
         case ( _, .left) : return (top: 1, left: 1, right: 0, bottom: 1)  }
 }
 
-let pieceBoundOffsets: [(top: Int, left: Int, right: Int, bottom: Int)] = { () -> [(top: Int, left: Int, right: Int, bottom: Int)] in
-    var offsets = [(top: Int, left: Int, right: Int, bottom: Int)](repeating: (top: 0, left: 0, right: 0, bottom: 0), count: 7 * 4)
-    for type in Tetromino.allCases {
-        for orientation in Piece.Orientation.allCases {
-            let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
-            offsets[piece.typeAndOrientationIndex] = getBoundOffsets(type: type, orientation: orientation)
-        }
-    }
-    return offsets
-}()
 
-
-// Now I can draw ASCII representations of Piece
+// ASCII "drawing" of Piece
 extension Piece: CustomDebugStringConvertible {
     public var debugDescription: String {
         let masks = makePieceBitmasks(type: type, orientation: orientation)
