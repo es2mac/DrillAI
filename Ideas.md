@@ -1,0 +1,43 @@
+
+Possible next steps:
+
+- Try in-memory model training (figure out saving/loading checkpoint or full model later, or just wait)
+- Generate some data with BCTS method and feed to model, see what happens
+- Training with data augmentation: horizontal flip (though this could be problematic, because SRS rotation system isn't completely symmetric) (update: it is symmetric for all but the I piece), and raising / lowering field garbages
+- Implement finding slide moves and SRS twist moves
+- Further debug performance
+- Consider terminal nodes (field garbage count = 0).  This probably requires separating the concepts of "having children" and "have been evaluated". (Maybe store value in node as optional, non-nil means evaluated)
+- Limit to 10-line digs for now.  To work with e.g. 100-line dig, need to dynamically compose field with a limited number of garbage
+
+
+MCTS (my implementation, not exactly as commonly described):
+
+- Start from root node, select best child until we find one that hasn't been evaluated
+  - "Best" includes priors, and balances exploration & exploitation
+  - Internally, this node is freshly initiated at this selection step
+- Prepare this node for evaluation, and set up for possible future visits
+  - Find all valid children
+  - Based on the number of valid children, initiate children N, W
+- Evaluate the node
+  - Get value of this node, and set priors for its children
+  - Backpropagate the value
+
+
+Working thought:
+
+- An NN model needs to be able to handle 0~5 previews when doing MCTS for a real game that has 5 previews.  Cases with more previews seems more important, but cases with less previews are used far more often in that type of search (if time permits).  In fact, if we often get down to 3 previews or fewer (tree depth >2), maybe it's reasonable to shrink the model to only handle fewer previews?  On the other hand, with very few or no preview, there shouldn't be enough information to know with any certainty whether the next few lines could be cleared quickly.  It's very situational.
+
+- Value function.  The general idea is efficiency, "piece/line ratio."  One idea is that only garbage lines matter, don't reward clearing lines made with player pieces.
+  - The NN should estimate future efficiency, but when doing tree search, the cumulative clear count should be taken into account too.  So far the most plausible idea is to take NN's value, assume it is the average of line clears over the next 14 (?) moves, take the moves and clears from root node to this node, and amend the average.
+
+- For RL's early stage, maybe I could set up a simplified problem, say given N=7 pieces (i.e. play, hold, and 5 previews), try to clear as many lines as possible.  Increase N once it gets off the ground.
+
+
+References:
+- The most relevant reference is [MiniGo in Swift](https://github.com/tensorflow/swift-models/tree/master/MiniGo), as well as the [original MiniGo](https://github.com/tensorflow/minigo).
+- [MCTS with Python explanation](http://www.moderndescartes.com/essays/deep_dive_mcts/), some interesting implementation details to think about.
+- [Nice of medium posts](https://medium.com/oracledevs/lessons-from-alphazero-part-3-parameter-tweaking-4dceb78ed1e5) on AlphaZero.
+- [El-Tetris](http://imake.ninja/el-tetris-an-improvement-on-pierre-dellacheries-algorithm/) [source code](https://github.com/daogan/tetris-ai/blob/master/tetris_ai.py) has some clarifications of hand-crafted features.
+
+
+
