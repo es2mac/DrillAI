@@ -8,7 +8,9 @@
 import Foundation
 
 
-/// Check if a piece can be placed on the field
+/// Check if a piece can be placed on the field.
+/// Not useful for AI applications as there are more efficient ways to do it
+/// when we perform a large number of checks during search, such as below.
 extension Field {
     func canPlace(_ piece: Piece) -> Bool {
         let index = piece.typeAndOrientationIndex
@@ -32,15 +34,14 @@ extension Field {
 
         return (pieceMask & fieldLines) == 0
     }
-
 }
 
 
 /// Find all possible simple (hard-dropped from top) placements of tetrominos
 extension Field {
-    /// Combine as many lines as an Int would hold, for faster piece checks
-    /// Also: shift by 2 to work with piece masks
-    var multiLineMasks: [Int] {
+    /// "Stack up" the lines so that each mask can be used to check
+    /// the placement of a piece with a single operation.
+    private var makeMultiLineMasks: [Int] {
         get {
             guard storage.count > 0 else { return [] }
             var masks = storage.map(Int.init)
@@ -56,12 +57,16 @@ extension Field {
     /// at the top of the field, then dropped straight down.
     /// That is, no soft-drop then shift or twist.
     func findAllSimplePlacements(for types: [Tetromino]) -> [Piece] {
-        let lineMasks = multiLineMasks
+        let lineMasks = makeMultiLineMasks
+        // Find all the starting positions (x & orientation) for all the pieces
+        // (1 or 2, i.e. play & hold), before figuring out how far it can drop.
         var pieces: [Piece] = types.flatMap { type in
             getStartingPlacements(type: type).map {
                 Piece(type: type, x: $0.x, y: 0, orientation: $0.orientation)
             }
         }
+        // Find the lowest that the piece can drop.
+        // Loop with index so we can set the y value in-place.
         for i in 0 ..< pieces.count {
             let index = pieces[i].typeAndOrientationIndex
             let boundOffsets = pieceBoundOffsets[index]
@@ -86,7 +91,7 @@ extension Field {
 
 // extension Field {
 //   func findAllPlacements(for types: [Tetromino]) -> [Piece] {
-//     let lineMasks = multiLineMasks
+//     let lineMasks = makeMultiLineMasks
 //     var allPlacements: [Piece] = []
 
 //     for type in types {
