@@ -177,7 +177,7 @@ func bctsEvaluate(_ node: MCTSNode, depth: Int) -> (value: Double, priors: [Doub
   }
 
 //  var priors = Tensor(childrenGarbageCleared) * 0.01
-    var priors = childrenGarbageCleared.map { $0 * 0.01 }
+    let priors = childrenGarbageCleared.map { $0 * 0.01 }
 
   // Try: Add some noise
 //  let noise = Tensor<Double>(randomUniform: priors.shape) * 0.02

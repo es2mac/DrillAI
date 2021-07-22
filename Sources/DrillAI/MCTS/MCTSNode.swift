@@ -91,7 +91,8 @@ extension MCTSNode: CustomDebugStringConvertible {
     }
 }
 
-extension MCTSNode: Hashable {
+//extension MCTSNode: Hashable {
+extension MCTSNode {
 
     // It seems likely that I might see collisions, because you can place
     // pieces in different orders using hold to get to the same state,
@@ -103,9 +104,5 @@ extension MCTSNode: Hashable {
         && lhs.step == rhs.step
         && lhs.garbageCleared == rhs.garbageCleared
         && lhs.indexInParent == rhs.indexInParent
-    }
-
-    var hashValue: Int {
-        return (field.hashValue << 3) | hold.hashValue
     }
 }

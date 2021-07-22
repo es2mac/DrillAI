@@ -40,9 +40,4 @@ extension Field: CustomDebugStringConvertible {
     }
 }
 
-extension Field: Hashable {
-    // TODO: Rename this as some kind of coding, and use this code (or not?) when adopting the new Hashable requirement
-    var hashValue: Int {
-        return self.storage.reduce(garbageCount) { ($0 << 3) ^ Int($1) }
-    }
-}
+extension Field: Hashable {}
