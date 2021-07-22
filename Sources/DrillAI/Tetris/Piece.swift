@@ -7,9 +7,11 @@
 
 import Foundation
 
-/// A piece is a tetromino with placement information.  Calling it "Piece"
-/// instead of "Placement" to be intentionally ambiguous, to use in different
-/// contexts where we need to describe more than just the Tetromino type.
+
+/// A piece is a tetromino that has an orientation and a position on the field.
+/// It could also represent an action performed (placing down a piece) in the game tree.
+/// Sometimes, we may use it just for the Tetromino type and orientation,
+/// ignoring position.
 struct Piece {
     enum Orientation: Int, CaseIterable {
         case up, right, down, left
@@ -23,7 +25,7 @@ struct Piece {
 
 
 extension Piece: Hashable {
-    // This encoding is unique and reversible
+    // This encoding is unique and reversible, so we can store the whole piece compactly as jsut an Int.
     var code: Int {
         return ((x + y * 10) << 5) | (type.rawValue << 2) | orientation.rawValue
     }
@@ -42,11 +44,11 @@ extension Piece: Hashable {
     }
 }
 
-// Piece conforms to CustomDebugStringConvertible, but it needs some constants defined later
-// extension Piece: CustomDebugStringConvertible {}
 
+/// Piece conforms to CustomDebugStringConvertible, but it needs some constants defined later
+// extension Piece: CustomDebugStringConvertible {}
 extension Piece {
-    /// This index is used as index to construct & access some constants
+    /// Index used to construct & access bitmask constants
     var typeAndOrientationIndex: Int {
         get { return type.rawValue * 4 + orientation.rawValue }
     }
