@@ -19,6 +19,8 @@ public struct Field {
     /// By convention, empty top rows should be removed.
     /// That is, the last element should not be 0.
     public let storage: [Int16]
+    /// As garbage rows and player-placed rows cannot be differentiated otherwise,
+    /// we need to keep track of how many garbage rows there are.
     public let garbageCount: Int
 
     public var height: Int { return storage.count }

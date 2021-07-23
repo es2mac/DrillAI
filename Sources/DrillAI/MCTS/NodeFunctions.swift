@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import Accelerate
 
-extension MCTSNode {
+
+extension MCTSNode where State == GameState {
 
     //    var move: Piece {
     //        guard let parent = parent else {
@@ -27,10 +29,10 @@ extension MCTSNode {
         // needs the play piece to find all possible actions.  Save the play piece
         // for later when initiating child nodes (because the child node's hold
         // piece may be the current play piece or the current hold piece)
-        self.playPieceType = playPieceType
+        self.state.playPieceType = playPieceType
 
-        let availableTypes = (playPieceType == hold) ? [hold] : [hold, playPieceType]
-        legalMoves = field.findAllSimplePlacements(for: availableTypes)
+        let availableTypes = (playPieceType == state.hold) ? [state.hold] : [state.hold, playPieceType]
+        legalMoves = state.field.findAllSimplePlacements(for: availableTypes)
 
         let count = legalMoves.count
         moveIndices = Dictionary(uniqueKeysWithValues: zip(legalMoves, 0..<count))
@@ -55,19 +57,27 @@ extension MCTSNode {
 
     func initiateChildNode(_ index: Int) -> MCTSNode {
         let placedPiece = legalMoves[index]
-        let (nextField, newGarbageCleared) = field.lockDown(placedPiece)
-        let newHold = (placedPiece.type == playPieceType) ? hold : playPieceType!
+        let (nextField, newGarbageCleared) = state.field.lockDown(placedPiece)
+        let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
 
-        let childNode = MCTSNode(field: nextField,
+        let newState = GameState(field: nextField,
                                  hold: newHold,
-                                 step: step + 1,
-                                 garbageCleared: garbageCleared + newGarbageCleared,
-                                 parent: self,
-                                 indexInParent: index)
+                                 step: state.step + 1,
+                                 garbageCleared: state.garbageCleared + newGarbageCleared)
+        let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
+//        let childNode = MCTSNode(field: nextField,
+//                                 hold: newHold,
+//                                 step: state.step + 1,
+//                                 garbageCleared: state.garbageCleared + newGarbageCleared,
+//                                 parent: self,
+//                                 indexInParent: index)
         children[index] = childNode
 
         return childNode
     }
+
+    // Wish: Use normal arrays to do these vector calculations
+    // but use Accelerate (vDSP?) to speed it up!
 
     //    var childrenActionScores: Tensor<Double> {
     //        let Q = meanActionValue
@@ -110,12 +120,13 @@ extension MCTSNode {
 }
 
 
-extension MCTSNode {
+extension MCTSNode where State == GameState {
     /// Next move selection: Deterministic
     func getMostVisitedChild() -> MCTSNode? {
         guard hasChildren else { return nil }
 
         //    let index = Int(childN.argmax().scalarized())
+        // vDSP.indexOfMaximum
         let index = childN.firstIndex(of: childN.max()!)!
         
 

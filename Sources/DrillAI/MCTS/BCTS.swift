@@ -12,10 +12,10 @@ import Foundation
 /// Thiery & Scherrer
 /// This value seems basically always in the negatives, from minus a few hundred
 /// to >3000 in utterly terrible fields
-func calculateBctsValue(_ node: MCTSNode) -> Double {
+func calculateBctsValue(_ node: MCTSNode<GameState, Piece>) -> Double {
     guard let parent = node.parent else { return 0 }
 
-    let field = node.field
+    let field = node.state.field
     let piece = parent.legalMoves[node.indexInParent]
     let lines = field.storage
 
@@ -24,7 +24,7 @@ func calculateBctsValue(_ node: MCTSNode) -> Double {
 
     // Eroded piece cells
     // (similar to locking down a piece on field)
-    let parentField = parent.field
+    let parentField = parent.state.field
 
     let pieceIndex = piece.bitmaskIndex
     let pieceMasks = pieceBitmasks[pieceIndex]
@@ -143,14 +143,14 @@ func calculateBctsValue(_ node: MCTSNode) -> Double {
 /// Simple old-school evaluation to make things work ok
 /// Good for testing without the neural network evaluation
 //func bctsEvaluate(_ node: MCTSNode, depth: Int) -> (value: Double, priors: Tensor<Double>) {
-func bctsEvaluate(_ node: MCTSNode, depth: Int) -> (value: Double, priors: [Double]) {
+func bctsEvaluate(_ node: MCTSNode<GameState, Piece>, depth: Int) -> (value: Double, priors: [Double]) {
 
     var value: Double
 
     if depth == 0 {
         value = 1
     } else {
-        value = Double(node.garbageCleared) / Double(depth + 10)
+        value = Double(node.state.garbageCleared) / Double(depth + 10)
     }
 
     // Try: adding BCTS
@@ -163,7 +163,7 @@ func bctsEvaluate(_ node: MCTSNode, depth: Int) -> (value: Double, priors: [Doub
     }
 
     // Try: "Winning" is a special case
-    if node.field.garbageCount == 0 {
+    if node.state.field.garbageCount == 0 {
         value += 2
     }
 
@@ -173,7 +173,7 @@ func bctsEvaluate(_ node: MCTSNode, depth: Int) -> (value: Double, priors: [Doub
 
     // Priors: Placements that clears a garbage line is given preference
     let childrenGarbageCleared: [Double] = node.legalMoves.map {
-        return Double(node.field.lockDown($0).garbageCleared)
+        return Double(node.state.field.lockDown($0).garbageCleared)
     }
 
     //  var priors = Tensor(childrenGarbageCleared) * 0.01
