@@ -13,7 +13,7 @@ import Foundation
 /// when we perform a large number of checks during search, such as below.
 extension Field {
     func canPlace(_ piece: Piece) -> Bool {
-        let index = piece.typeAndOrientationIndex
+        let index = piece.bitmaskIndex
         let boundOffsets = pieceBoundOffsets[index]
         let pieceLeft = piece.x - boundOffsets.left
         let pieceRight = piece.x + boundOffsets.right
@@ -67,7 +67,7 @@ extension Field {
         // Find the lowest that the piece can drop.
         // Loop with index so we can set the y value in-place.
         for i in 0 ..< pieces.count {
-            let index = pieces[i].typeAndOrientationIndex
+            let index = pieces[i].bitmaskIndex
             let boundOffsets = pieceBoundOffsets[index]
             let pieceLeft = pieces[i].x - boundOffsets.left
             let pieceMask = wholePieceBitmasks[index] << pieceLeft

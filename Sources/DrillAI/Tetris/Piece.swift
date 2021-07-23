@@ -46,10 +46,12 @@ extension Piece: Hashable {
 
 
 extension Piece {
-    /// Index internally used mainly to construct & access bitmask constants
+    /// Index internally used mainly to construct & access bitmask constants.
+    /// As bitmasks are defined for just the minimum rectangle enclosing the piece,
+    /// it only concerns the type & orientatation, not its position.
     /// See: FieldUtilities
-    var typeAndOrientationIndex: Int {
-        get { return type.rawValue * 4 + orientation.rawValue }
+    var bitmaskIndex: Int {
+        return type.rawValue * 4 + orientation.rawValue
     }
 }
 
@@ -57,7 +59,7 @@ extension Piece {
 // ASCII "drawing" of Piece
 extension Piece: CustomDebugStringConvertible {
     public var debugDescription: String {
-        let masks = pieceBitmasks[typeAndOrientationIndex]
+        let masks = pieceBitmasks[bitmaskIndex]
         let lines = masks.map {
             String($0, radix: 2)
                 .replacingOccurrences(of: "0", with: " ")

@@ -26,7 +26,7 @@ func calculateBctsValue(_ node: MCTSNode) -> Double {
   // (similar to locking down a piece on field)
   let parentField = parent.field
 
-  let pieceIndex = piece.typeAndOrientationIndex
+  let pieceIndex = piece.bitmaskIndex
   let pieceMasks = pieceBitmasks[pieceIndex]
   let boundOffsets = pieceBoundOffsets[pieceIndex]
   let pieceLeft = piece.x - boundOffsets.left

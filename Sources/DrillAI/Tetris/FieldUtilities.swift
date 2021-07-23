@@ -29,7 +29,7 @@ import Foundation
  Ref: https://harddrop.com/wiki/SRS
 
  For performance, each of these sets of constants are packed in arrays with custom indexing scheme
- (piece.typeAndOrientationIndex) to make sure they can be retrieved as efficiently as possible.
+ (piece.bitmaskIndex) to make sure they can be retrieved as efficiently as possible.
  The more intuitive, switch-based constant definitions are kept private.
  */
 
@@ -39,7 +39,7 @@ let pieceBitmasks: [[Int16]] = .init(unsafeUninitializedCapacity: 7 * 4) { buffe
     for type in Tetromino.allCases {
         for orientation in Piece.Orientation.allCases {
             let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
-            buffer[piece.typeAndOrientationIndex] = makePieceBitmasks(type: type, orientation: orientation)
+            buffer[piece.bitmaskIndex] = makePieceBitmasks(type: type, orientation: orientation)
         }
     }
     initializedCount = 7 * 4
@@ -60,7 +60,7 @@ let pieceBoundOffsets: [(top: Int, left: Int, right: Int, bottom: Int)] = { () -
     for type in Tetromino.allCases {
         for orientation in Piece.Orientation.allCases {
             let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
-            offsets[piece.typeAndOrientationIndex] = getBoundOffsets(type: type, orientation: orientation)
+            offsets[piece.bitmaskIndex] = getBoundOffsets(type: type, orientation: orientation)
         }
     }
     return offsets

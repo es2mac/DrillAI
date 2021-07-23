@@ -15,7 +15,7 @@ import Foundation
 //    var lines = root.field.storage
 //
 //    let piece = root.legalMoves[childNode.indexInParent]
-//    let pieceIndex = piece.typeAndOrientationIndex
+//    let pieceIndex = piece.bitmaskIndex
 //    let boundOffsets = pieceBoundOffsets[pieceIndex]
 //    let pieceLeft = piece.x - boundOffsets.left
 //    let pieceMasks = pieceBitmasks[pieceIndex].map { $0 << pieceLeft}

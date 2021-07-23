@@ -39,7 +39,7 @@ public extension Field {
     /// the field must already have at least 6 rows.  This would be true if
     /// the piece locked legally.
     func lockDown(_ piece: Piece) -> (newField: Field, garbageCleared: Int) {
-        let index = piece.typeAndOrientationIndex
+        let index = piece.bitmaskIndex
         let boundOffsets = pieceBoundOffsets[index]
         let pieceLeft = piece.x - boundOffsets.left
         let pieceMasks = pieceBitmasks[index]
