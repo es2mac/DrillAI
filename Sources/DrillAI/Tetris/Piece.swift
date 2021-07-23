@@ -12,7 +12,7 @@ import Foundation
 /// It could also represent an action performed (placing down a piece) in the game tree.
 /// Sometimes, we may use it just for the Tetromino type and orientation,
 /// ignoring position.
-struct Piece {
+public struct Piece {
     enum Orientation: Int, CaseIterable {
         case up, right, down, left
     }

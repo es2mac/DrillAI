@@ -8,43 +8,7 @@
 import Foundation
 
 
-/// Placeholder: Need to find a replacement for Tensor, maybe MLMultiArray?
-//class Tensor<Value> {
-//    static var zero: Tensor { .init() }
-//
-//    init() { }
-//    convenience init(randomUniform dimensions: [Int]) where Value == Double { self.init() }
-//    convenience init(zeros dimensions: [Int]) where Value == Double { self.init() }
-//
-//    func argmax() -> Tensor<Value> { self }
-//    func sum() -> Tensor<Value> { self }
-//    func scalarized() -> Double { 0 }
-//}
-//
-//func *(lhs: Tensor<Double>, rhs: Double) -> Tensor<Double> {
-//    lhs
-//}
-//func /(lhs: Tensor<Double>, rhs: Tensor<Double>) -> Tensor<Double> {
-//    lhs
-//}
-//func /(lhs: Tensor<Double>, rhs: Double) -> Tensor<Double> {
-//    lhs
-//}
-//func +(lhs: Tensor<Double>, rhs: Tensor<Double>) -> Tensor<Double> {
-//    lhs
-//}
-//func +(lhs: Tensor<Double>, rhs: Double) -> Tensor<Double> {
-//    lhs
-//}
-//func +(lhs: Double, rhs: Tensor<Double>) -> Tensor<Double> {
-//    rhs
-//}
-//func +(lhs: Int, rhs: Tensor<Double>) -> Tensor<Double> {
-//    rhs
-//}
-
-
-class MCTSNode {
+public class MCTSNode {
     // Game state
     let field: Field
     let hold: Tetromino

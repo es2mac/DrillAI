@@ -14,7 +14,7 @@ import Foundation
 /// In particular, it keeps a count of the original garbage lines,
 /// but otherwise does not remember the original form of each block
 /// (i.e. which tetromino it was).
-struct Field {
+public struct Field {
     /// Each row is stored as bits in an Int16.
     /// By convention, empty top rows should be removed.
     /// That is, the last element should not be 0.
@@ -24,14 +24,15 @@ struct Field {
     var height: Int { return storage.count }
 }
 
-extension Field {
+public extension Field {
     init() {
         self.storage = []
         self.garbageCount = 0
     }
 }
 
-extension Field {
+
+public extension Field {
     /// Place (lock down) a piece.
     /// Returns a copy of the field with a piece placed in, and lines cleared.
     /// "Paste" the piece right onto the field, does not check if it's legal.

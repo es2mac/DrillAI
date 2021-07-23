@@ -8,7 +8,7 @@
 import Foundation
 
 /// Seven type of tetromino.
-enum Tetromino: Int, CaseIterable {
+public enum Tetromino: Int, CaseIterable {
     case I, J, L, O, S, T, Z  // In alphabetical order
 }
 
