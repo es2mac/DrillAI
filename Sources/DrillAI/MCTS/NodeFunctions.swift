@@ -9,12 +9,12 @@ import Foundation
 
 extension MCTSNode {
 
-//    var move: Piece {
-//        guard let parent = parent else {
-//            fatalError("Can't get move if don't have parent")
-//        }
-//        return parent.legalMoves[indexInParent]
-//    }
+    //    var move: Piece {
+    //        guard let parent = parent else {
+    //            fatalError("Can't get move if don't have parent")
+    //        }
+    //        return parent.legalMoves[indexInParent]
+    //    }
 
     var hasChildren: Bool {
         return !children.isEmpty
@@ -36,18 +36,18 @@ extension MCTSNode {
         moveIndices = Dictionary(uniqueKeysWithValues: zip(legalMoves, 0..<count))
 
         children = Array<MCTSNode?>.init(repeating: nil, count: count)
-//        priors = Tensor(randomUniform: [count]) * 0.01 + (1 / Double(count + 1))
+        //        priors = Tensor(randomUniform: [count]) * 0.01 + (1 / Double(count + 1))
         priors = [Double]()
-//        childW = Tensor(zeros: [count])
+        //        childW = Tensor(zeros: [count])
         childW = [Double]()
-//        childN = Tensor(zeros: [count])
+        //        childN = Tensor(zeros: [count])
         childN = [Double]()
     }
 
     func getHighestValuedChild() -> MCTSNode {
         assert(hasChildren, "Can't get highest valued child before having children")
 
-//        let bestIndex = Int(childrenActionScores.argmax().scalarized())
+        //        let bestIndex = Int(childrenActionScores.argmax().scalarized())
         let bestIndex = childrenActionScores.firstIndex(of: childrenActionScores.max()!)!
 
         return children[bestIndex] ?? initiateChildNode(bestIndex)
@@ -69,18 +69,18 @@ extension MCTSNode {
         return childNode
     }
 
-//    var childrenActionScores: Tensor<Double> {
-//        let Q = meanActionValue
-//        let U = puctValue
-//        return Q + U
-//    }
+    //    var childrenActionScores: Tensor<Double> {
+    //        let Q = meanActionValue
+    //        let U = puctValue
+    //        return Q + U
+    //    }
     var childrenActionScores: [Double] {
         zip(meanActionValue, puctValue).map { Q, U in Q + U }
     }
 
-//    var meanActionValue: Tensor<Double> {
-//        return childW / (1 + childN)
-//    }
+    //    var meanActionValue: Tensor<Double> {
+    //        return childW / (1 + childN)
+    //    }
     var meanActionValue: [Double] {
         zip(childW, childN).map { W, N in W / (1 + N) }
     }
@@ -101,7 +101,7 @@ extension MCTSNode {
 
         let C = cInitial + log((1 + totalN + cBase) / cBase)
 
-//        return puctConstant * C * priors * sqrt(adjustedTotalN) / (1 + childN)
+        //        return puctConstant * C * priors * sqrt(adjustedTotalN) / (1 + childN)
         return zip(priors, childN).map { prior, N in
             puctConstant * C * prior * sqrt(adjustedTotalN) / ( 1 + N)
         }
@@ -111,34 +111,34 @@ extension MCTSNode {
 
 
 extension MCTSNode {
-  /// Next move selection: Deterministic
-  func getMostVisitedChild() -> MCTSNode? {
-    guard hasChildren else { return nil }
+    /// Next move selection: Deterministic
+    func getMostVisitedChild() -> MCTSNode? {
+        guard hasChildren else { return nil }
 
-//    let index = Int(childN.argmax().scalarized())
-    let index = childN.firstIndex(of: childN.max()!)!
+        //    let index = Int(childN.argmax().scalarized())
+        let index = childN.firstIndex(of: childN.max()!)!
+        
 
-
-    // This could still return nil, if no child has been visited
-    return children[index]
-  }
-
-  /// Next move selection: Probabilistic (using softmax of visit counts)
-  func getChildWithWeightedProbability() -> MCTSNode? {
-    guard hasChildren else { return nil }
-
-//    let distribution = softmax(childN)
-    let distribution = childN
-//    var randomTarget = Tensor(Double.random(in: 0..<1))
-    var randomTarget = Double.random(in: 0.0..<1.0)
-
-    for index in 0 ..< children.count {
-      let probability = distribution[index]
-      if randomTarget < probability {
+        // This could still return nil, if no child has been visited
         return children[index]
-      }
-      randomTarget -= probability
     }
-    return nil
-  }
+
+    /// Next move selection: Probabilistic (using softmax of visit counts)
+    func getChildWithWeightedProbability() -> MCTSNode? {
+        guard hasChildren else { return nil }
+
+        //    let distribution = softmax(childN)
+        let distribution = childN
+        //    var randomTarget = Tensor(Double.random(in: 0..<1))
+        var randomTarget = Double.random(in: 0.0..<1.0)
+
+        for index in 0 ..< children.count {
+            let probability = distribution[index]
+            if randomTarget < probability {
+                return children[index]
+            }
+            randomTarget -= probability
+        }
+        return nil
+    }
 }

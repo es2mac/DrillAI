@@ -26,11 +26,11 @@ public class MCTSNode {
     var moveIndices = [Piece : Int]()
 
     // Evaluation
-//    var priors = Tensor<Double>.zero
+    //    var priors = Tensor<Double>.zero
     var priors = [Double]()
-//    var childW = Tensor<Double>.zero
+    //    var childW = Tensor<Double>.zero
     var childW = [Double]()
-//    var childN = Tensor<Double>.zero
+    //    var childN = Tensor<Double>.zero
     var childN = [Double]()
 
     // Initializer
