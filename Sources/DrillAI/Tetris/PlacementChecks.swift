@@ -38,7 +38,9 @@ extension Field {
 }
 
 
-/// Find all possible simple (hard-dropped from top) placements of tetrominos
+/// Find all possible simple (hard-dropped from top) placements of tetrominos.
+/// In the future, we want to find all possible placements (including slides and spins).
+/// For that we need to implement spin rules, graph search all placements, and eliminate isomorphic results.
 extension Field {
     /// "Stack up" the lines so that each mask can be used to check
     /// the placement of a piece with a single operation.
@@ -81,26 +83,3 @@ extension Field {
     }
 }
 
-
-/// Find all possible placements (including slides and spins)
-
-// Work in progress.  Need to implement spin rules, graph search all placements,
-// and eliminate isomorphic results.
-
-
-// extension Field {
-//   func findAllPlacements(for types: [Tetromino]) -> [Piece] {
-//     let lineMasks = makeMultiLineMasks
-//     var allPlacements: [Piece] = []
-
-//     for type in types {
-//       var pieces = getStartingPlacements[type].map {
-//         Piece(type: type, x: $0.x, y: 0, orientation: $0.orientation)
-//       }
-//       // Find all simple placements, remember their wholePieceMasks and bottomRoww
-//       // From the simple placements, see if
-//     }
-
-
-//   }
-// }
