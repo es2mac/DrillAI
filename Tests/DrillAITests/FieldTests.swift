@@ -88,4 +88,50 @@ final class FieldTests: XCTestCase {
         XCTAssertEqual(garbageCleared, 0)
         XCTAssertEqual(newField.height, field.height - 1)
     }
+
+    func testFindingSimplePlacementsForEveryType() throws {
+        let storage: [Int16] = [
+            0b01111_11111,
+            0b01111_11111,
+            0b01101_11111,
+            0b00000_01111,
+            0b00000_00001,
+        ]
+        let field = Field(storage: storage)
+        for type in Tetromino.allCases {
+            let count = Set(field.findAllSimplePlacements(for: [type])).count
+            switch type {
+            case .I:
+                XCTAssertEqual(count, 17)
+            case .J:
+                XCTAssertEqual(count, 34)
+            case .L:
+                XCTAssertEqual(count, 34)
+            case .O:
+                XCTAssertEqual(count, 9)
+            case .S:
+                XCTAssertEqual(count, 17)
+            case .T:
+                XCTAssertEqual(count, 34)
+            case .Z:
+                XCTAssertEqual(count, 17)
+            }
+        }
+    }
+
+    func testFindingSimplePlacementsForTwoTypesAreCombined() throws {
+        let storage: [Int16] = [
+            0b01111_11111,
+            0b01111_11111,
+            0b01101_11111,
+            0b00000_01111,
+            0b00000_00001,
+        ]
+        let field = Field(storage: storage)
+        let types = Tetromino.allCases.shuffled().prefix(2)
+        let set1 = Set(field.findAllSimplePlacements(for: [types[0]]))
+        let set2 = Set(field.findAllSimplePlacements(for: [types[1]]))
+        let setBoth = Set(field.findAllSimplePlacements(for: Array(types)))
+        XCTAssertEqual(setBoth, set1.union(set2))
+    }
 }
