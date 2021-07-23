@@ -22,7 +22,8 @@ extension Field {
 
         guard pieceLeft >= 0, pieceRight < 10, pieceBottom >= 0 else { return false }
 
-        // Only need to check for obstruction in rows that exist
+        // Only need to check for obstruction in rows that
+        // the storage & the piece have in common
         if pieceBottom >= storage.count { return true }
 
         let pieceMask = wholePieceBitmasks[index] << pieceLeft
