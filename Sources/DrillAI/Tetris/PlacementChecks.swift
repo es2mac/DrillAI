@@ -42,23 +42,21 @@ extension Field {
 extension Field {
     /// "Stack up" the lines so that each mask can be used to check
     /// the placement of a piece with a single operation.
-    private var makeMultiLineMasks: [Int] {
-        get {
-            guard storage.count > 0 else { return [] }
-            var masks = storage.map(Int.init)
+    private func makeMultiLineMasks() -> [Int] {
+        guard storage.count > 0 else { return [] }
+        var masks = storage.map(Int.init)
 
-            for i in (1 ..< masks.count).reversed() {
-                masks[i - 1] |= (masks[i] << 10)
-            }
-            return masks
+        for i in (1 ..< masks.count).reversed() {
+            masks[i - 1] |= (masks[i] << 10)
         }
+        return masks
     }
 
     /// Simple placements are those reached by shifting & rotating first
     /// at the top of the field, then dropped straight down.
     /// That is, no soft-drop then shift or twist.
     func findAllSimplePlacements(for types: [Tetromino]) -> [Piece] {
-        let lineMasks = makeMultiLineMasks
+        let lineMasks = makeMultiLineMasks()
         // Find all the starting positions (x & orientation) for all the pieces
         // (1 or 2, i.e. play & hold), before figuring out how far it can drop.
         var pieces: [Piece] = types.flatMap { type in
