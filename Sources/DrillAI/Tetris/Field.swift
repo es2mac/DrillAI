@@ -18,12 +18,12 @@ public struct Field {
     /// Each row is stored as bits in an Int16.
     /// By convention, empty top rows should be removed.
     /// That is, the last element should not be 0.
-    let storage: [Int16]
-    let garbageCount: Int
+    public let storage: [Int16]
+    public let garbageCount: Int
 
-    var height: Int { return storage.count }
+    public var height: Int { return storage.count }
 
-    init(storage: [Int16] = [], garbageCount: Int = 0) {
+    public init(storage: [Int16] = [], garbageCount: Int = 0) {
         assert(storage.count >= garbageCount)
         self.storage = storage
         self.garbageCount = garbageCount

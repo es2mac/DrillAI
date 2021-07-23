@@ -13,25 +13,25 @@ import Foundation
 /// Sometimes, we may use it just for the Tetromino type and orientation,
 /// ignoring position.
 public struct Piece {
-    enum Orientation: Int, CaseIterable {
+    public enum Orientation: Int, CaseIterable {
         case up, right, down, left
     }
     
-    let type: Tetromino
-    var x: Int
-    var y: Int
-    var orientation: Orientation = .up
+    public let type: Tetromino
+    public var x: Int
+    public var y: Int
+    public var orientation: Orientation = .up
 }
 
 
 extension Piece: Hashable {
     /// This encoding is unique and reversible (for reasonable height y),
     /// so we can store the whole piece compactly as just an Int.
-    var code: Int {
+    public var code: Int {
         return ((x + y * 10) << 5) | (type.rawValue << 2) | orientation.rawValue
     }
     
-    init(code: Int) {
+    public init(code: Int) {
         let x = (code >> 5) % 10
         let y = (code >> 5) / 10
         let type = Tetromino(rawValue: (code >> 2) & 0b111)!

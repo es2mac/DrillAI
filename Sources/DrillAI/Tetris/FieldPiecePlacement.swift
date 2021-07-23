@@ -11,7 +11,7 @@ import Foundation
 /// Check if a piece can be placed on the field.
 /// Not useful for AI applications as there are more efficient ways to do it
 /// when we perform a large number of checks during search, such as below.
-extension Field {
+public extension Field {
     func canPlace(_ piece: Piece) -> Bool {
         let index = piece.bitmaskIndex
         let boundOffsets = pieceBoundOffsets[index]
