@@ -16,7 +16,7 @@ func calculateBctsValue(_ node: MCTSNode<GameState, Piece>) -> Double {
     guard let parent = node.parent else { return 0 }
 
     let field = node.state.field
-    let piece = parent.legalMoves[node.indexInParent]
+    let piece = parent.nextActions[node.indexInParent]
     let lines = field.storage
 
     // Landing height
@@ -172,7 +172,7 @@ func bctsEvaluate(_ node: MCTSNode<GameState, Piece>, depth: Int) -> (value: Dou
 
 
     // Priors: Placements that clears a garbage line is given preference
-    let childrenGarbageCleared: [Double] = node.legalMoves.map {
+    let childrenGarbageCleared: [Double] = node.nextActions.map {
         return Double(node.state.field.lockDown($0).garbageCleared)
     }
 

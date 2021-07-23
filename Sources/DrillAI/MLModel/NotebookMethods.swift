@@ -103,7 +103,7 @@ import Foundation
 //                   hold: Tetromino,
 //                   play: [Tetromino],
 //                   garbageCleared: Int,
-//                   legalMoves: [Piece],
+//                   nextActions: [Piece],
 //                   childN: Tensor<Double>) {
 //    var values = [Int]()
 //    // Timestamp as ID

@@ -9,14 +9,7 @@ import Foundation
 import Accelerate
 
 
-extension MCTSNode where State == GameState {
-
-    //    var move: Piece {
-    //        guard let parent = parent else {
-    //            fatalError("Can't get move if don't have parent")
-    //        }
-    //        return parent.legalMoves[indexInParent]
-    //    }
+extension MCTSNode where State == GameState, Action == Piece {
 
     var hasChildren: Bool {
         return !children.isEmpty
@@ -32,10 +25,10 @@ extension MCTSNode where State == GameState {
         self.state.playPieceType = playPieceType
 
         let availableTypes = (playPieceType == state.hold) ? [state.hold] : [state.hold, playPieceType]
-        legalMoves = state.field.findAllSimplePlacements(for: availableTypes)
+        nextActions = state.field.findAllSimplePlacements(for: availableTypes)
 
-        let count = legalMoves.count
-        moveIndices = Dictionary(uniqueKeysWithValues: zip(legalMoves, 0..<count))
+        let count = nextActions.count
+        moveIndices = Dictionary(uniqueKeysWithValues: zip(nextActions, 0..<count))
 
         children = Array<MCTSNode?>.init(repeating: nil, count: count)
         //        priors = Tensor(randomUniform: [count]) * 0.01 + (1 / Double(count + 1))
@@ -56,7 +49,7 @@ extension MCTSNode where State == GameState {
     }
 
     func initiateChildNode(_ index: Int) -> MCTSNode {
-        let placedPiece = legalMoves[index]
+        let placedPiece = nextActions[index]
         let (nextField, newGarbageCleared) = state.field.lockDown(placedPiece)
         let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
 
@@ -65,14 +58,8 @@ extension MCTSNode where State == GameState {
                                  step: state.step + 1,
                                  garbageCleared: state.garbageCleared + newGarbageCleared)
         let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
-//        let childNode = MCTSNode(field: nextField,
-//                                 hold: newHold,
-//                                 step: state.step + 1,
-//                                 garbageCleared: state.garbageCleared + newGarbageCleared,
-//                                 parent: self,
-//                                 indexInParent: index)
-        children[index] = childNode
 
+        children[index] = childNode
         return childNode
     }
 
@@ -120,7 +107,7 @@ extension MCTSNode where State == GameState {
 }
 
 
-extension MCTSNode where State == GameState {
+extension MCTSNode where State == GameState, Action == Piece {
     /// Next move selection: Deterministic
     func getMostVisitedChild() -> MCTSNode? {
         guard hasChildren else { return nil }

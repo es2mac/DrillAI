@@ -59,7 +59,7 @@ func constructFeaturePlanes(field: Field, hold: Tetromino, play: [Tetromino]) ->
 // Prototype: For sequential evaluations only
 func modelEvaluate(model: TetrisModel,
                    field: Field,
-                   legalMoves: [Piece],
+                   nextActions: [Piece],
                    hold: Tetromino,
                    play: [Tetromino]) -> (value: Double, priors: Tensor<Double>) {
 

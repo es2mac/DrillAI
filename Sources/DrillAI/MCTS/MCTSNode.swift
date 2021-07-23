@@ -12,24 +12,17 @@ public class MCTSNode<State, Action> {
     // State of the game at this node
     var state: State
 
-//    let field: Field
-//    let hold: Tetromino
-//    let step: Int
-//    let garbageCleared: Int
-//    var playPieceType: Tetromino? = nil // Not given until setting up children
-
     // The action that was taken to reach this state from the previous state
-    // var action: Action
+//    var action: Action
 
-    // Tree structure: parent
-    // Backward traversal happens when the node is evaluated,
-    // and the result is propagated back up
+    // Backward traversal happens when the node's evaluation is done,
+    // and the result is propagated back up the tree
     private(set) weak var parent: MCTSNode?
     // Want to remove this, maybe with OrderedSet as children
     let indexInParent: Int
 
     // Children
-    var legalMoves = [Piece]()
+    var nextActions = [Action]()
     var children = [MCTSNode?]()
     var moveIndices = [Piece : Int]()
 

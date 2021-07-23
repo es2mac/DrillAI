@@ -14,7 +14,7 @@ import Foundation
 //
 //    var lines = root.field.storage
 //
-//    let piece = root.legalMoves[childNode.indexInParent]
+//    let piece = root.nextActions[childNode.indexInParent]
 //    let pieceIndex = piece.bitmaskIndex
 //    let boundOffsets = pieceBoundOffsets[pieceIndex]
 //    let pieceLeft = piece.x - boundOffsets.left
