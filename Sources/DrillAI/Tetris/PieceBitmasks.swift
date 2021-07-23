@@ -1,5 +1,5 @@
 //
-//  FieldUtilities.swift
+//  PieceBitmasks.swift
 //  
 //
 //  Created by Paul on 7/5/21.
@@ -10,7 +10,7 @@ import Foundation
 
 
 /**
- Here is a collection of utility functions / constants for checking whether a piece fits on a field.
+ Here is a collection of utility constants for checking whether a piece fits on a field.
  To quickly check whether a piece (with tetromino type, orientation and center position) collides
  with what's already on the field, we use bitwise AND, line-by-line (in the case of `pieceBitmasks`)
  or one-shot multi-lines (in the case of `wholePieceBitmasks`).

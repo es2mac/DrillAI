@@ -7,9 +7,16 @@
 
 import Foundation
 
-/// Tetromino's starting placements are x-coordinates + orientations reached by
-/// 2-step finesse, without obstruction and disregarding y-coordinates.
-/// Hard-dropping from here becomes a "simple placement," below.
+
+/**
+ Here is a set of constants to help speed up finding all the ways to drop a piece onto a field,
+ without using slides or spins (i.e. "simple placements").
+
+ The way to do that is to forget about the y-coordinate, and for every type of tetromino,
+ we have a fixed list of possible positions, and from there we can just hard drop each one.
+
+ I and S/Z pieces look a bit funny because they follow 2-step finesse rules.
+ */
 
 typealias StartingPlacement = (x: Int, orientation: Piece.Orientation)
 

@@ -1,5 +1,5 @@
 //
-//  PlacementChecks.swift
+//  FieldPiecePlacement.swift
 //  
 //
 //  Created by Paul on 7/5/21.
