@@ -22,7 +22,7 @@ extension MCTSNode where State == GameState, Action == Piece {
         // needs the play piece to find all possible actions.  Save the play piece
         // for later when initiating child nodes (because the child node's hold
         // piece may be the current play piece or the current hold piece)
-        self.state.playPieceType = playPieceType
+//        self.state.playPieceType = playPieceType
 
         let availableTypes = (playPieceType == state.hold) ? [state.hold] : [state.hold, playPieceType]
         nextActions = state.field.findAllSimplePlacements(for: availableTypes)

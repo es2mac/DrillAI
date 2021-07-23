@@ -11,7 +11,7 @@ import Foundation
 public class MCTSNode<State, Action> {
 
     /// State of the game at this node
-    public var state: State
+    public let state: State
 
     /// We keep a reference of the parent to allow backward traversal, which happens
     /// when the node's evaluation is done, and the result is propagated back up the tree
@@ -47,7 +47,7 @@ public class MCTSNode<State, Action> {
     /// it would visit nodes with good values more often, so the child with highest N is essentially "best."
     public var childN = [Double]()
 
-    init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
+    public init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
         self.state = state
         self.parent = parent
         self.indexInParent = indexInParent
