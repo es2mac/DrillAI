@@ -22,12 +22,11 @@ public struct Field {
     let garbageCount: Int
 
     var height: Int { return storage.count }
-}
 
-public extension Field {
-    init() {
-        self.storage = []
-        self.garbageCount = 0
+    init(storage: [Int16] = [], garbageCount: Int = 0) {
+        assert(storage.count >= garbageCount)
+        self.storage = storage
+        self.garbageCount = garbageCount
     }
 }
 
