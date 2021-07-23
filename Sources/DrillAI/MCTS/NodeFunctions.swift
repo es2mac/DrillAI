@@ -28,7 +28,6 @@ extension MCTSNode where State == GameState, Action == Piece {
         nextActions = state.field.findAllSimplePlacements(for: availableTypes)
 
         let count = nextActions.count
-        moveIndices = Dictionary(uniqueKeysWithValues: zip(nextActions, 0..<count))
 
         children = Array<MCTSNode?>.init(repeating: nil, count: count)
         //        priors = Tensor(randomUniform: [count]) * 0.01 + (1 / Double(count + 1))
