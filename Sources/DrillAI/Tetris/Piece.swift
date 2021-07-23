@@ -45,11 +45,28 @@ extension Piece: Hashable {
 }
 
 
-/// Piece conforms to CustomDebugStringConvertible, but it needs some constants defined later
-// extension Piece: CustomDebugStringConvertible {}
 extension Piece {
-    /// Index used to construct & access bitmask constants
+    /// Index internally used mainly to construct & access bitmask constants
+    /// See: FieldUtilities
     var typeAndOrientationIndex: Int {
         get { return type.rawValue * 4 + orientation.rawValue }
+    }
+}
+
+
+// ASCII "drawing" of Piece
+extension Piece: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        let masks = pieceBitmasks[typeAndOrientationIndex]
+        let lines = masks.map {
+            String($0, radix: 2)
+                .replacingOccurrences(of: "0", with: " ")
+                .replacingOccurrences(of: "1", with: "X")
+        }
+
+        var joinedLines = String(lines.joined(separator: "\n").reversed())
+        joinedLines += String(repeating: " ", count: 6 - lines.last!.count)
+        joinedLines += "(\(x), \(y))\n"
+        return "\n" + joinedLines
     }
 }

@@ -1,5 +1,5 @@
 //
-//  FieldFunctions.swift
+//  FieldUtilities.swift
 //  
 //
 //  Created by Paul on 7/5/21.
@@ -10,34 +10,40 @@ import Foundation
 
 
 /**
+ Here is a collection of utility functions / constants for checking whether a piece fits on a field.
+ To quickly check whether a piece (with tetromino type, orientation and center position) collides
+ with what's already on the field, we use bitwise AND, line-by-line (in the case of `pieceBitmasks`)
+ or one-shot multi-lines (in the case of `wholePieceBitmasks`).
+
  To describe what a tetromino looks like in a particular rotation, here I
  specify lines of bitmasks, and use "bound offsets" to describe the shape of
  the bounding box.  For example, (.J, .down) looks like
- 111
- 100
+
+     111
+     100
+
  and it's in a 2x3 box, with the center point being the top middle cell.
  So to specify the box, I specify how far the boundaries are in four
  directions from the center, i.e. 1 to the left/right/bottom, 0 to top.
 
  Ref: https://harddrop.com/wiki/SRS
- */
 
-/*
- Performance note:  Each of these sets of constants are packed in arrays with custom indexing scheme
- (piece.typeAndOrientationIndex) to make sure they can be retrieved as efficiently as possible
+ For performance, each of these sets of constants are packed in arrays with custom indexing scheme
+ (piece.typeAndOrientationIndex) to make sure they can be retrieved as efficiently as possible.
+ The more intuitive, switch-based constant definitions are kept private.
  */
 
 /// Bitmasks of every piece in every orientation
-let pieceBitmasks: [[Int16]] = { () -> [[Int16]] in
-    var masks = [[Int16]](repeating: [], count: 7 * 4)
+let pieceBitmasks: [[Int16]] = .init(unsafeUninitializedCapacity: 7 * 4) { buffer, initializedCount in
+    buffer.initialize(repeating: [])
     for type in Tetromino.allCases {
         for orientation in Piece.Orientation.allCases {
             let piece = Piece(type: type, x: 0, y: 0, orientation: orientation)
-            masks[piece.typeAndOrientationIndex] = makePieceBitmasks(type: type, orientation: orientation)
+            buffer[piece.typeAndOrientationIndex] = makePieceBitmasks(type: type, orientation: orientation)
         }
     }
-    return masks
-}()
+    initializedCount = 7 * 4
+}
 
 
 /// Bitmasks of every piece in every orientation, multi-lined in one Int
@@ -61,7 +67,6 @@ let pieceBoundOffsets: [(top: Int, left: Int, right: Int, bottom: Int)] = { () -
 }()
 
 
-/// Construct bitmasks of piece for placement check
 private func makePieceBitmasks(type: Tetromino, orientation: Piece.Orientation) -> [Int16] {
     switch (type, orientation) {
     case (.I, .up),    (.I, .down): return [0b1111]
@@ -100,24 +105,8 @@ private func getBoundOffsets(type: Tetromino, orientation: Piece.Orientation) ->
     case ( _, .up)   : return (top: 1, left: 1, right: 1, bottom: 0)
     case ( _, .right): return (top: 1, left: 0, right: 1, bottom: 1)
     case ( _, .down) : return (top: 0, left: 1, right: 1, bottom: 1)
-        case ( _, .left) : return (top: 1, left: 1, right: 0, bottom: 1)  }
-}
-
-
-// ASCII "drawing" of Piece
-extension Piece: CustomDebugStringConvertible {
-    public var debugDescription: String {
-        let masks = makePieceBitmasks(type: type, orientation: orientation)
-        let lines = masks.map {
-            String($0, radix: 2)
-                .replacingOccurrences(of: "0", with: " ")
-                .replacingOccurrences(of: "1", with: "X")
-        }
-
-        var joinedLines = String(lines.joined(separator: "\n").reversed())
-        joinedLines += String(repeating: " ", count: 6 - lines.last!.count)
-        joinedLines += "(\(x), \(y))\n"
-        return "\n" + joinedLines
+    case ( _, .left) : return (top: 1, left: 1, right: 0, bottom: 1)
     }
 }
+
 
