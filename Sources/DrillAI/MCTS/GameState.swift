@@ -36,6 +36,22 @@ extension GameState: MCTSState {
 
         return []
     }
+
+    func getNextState(for piece: Piece) -> GameState {
+        assert(field.canPlace(piece))
+
+        let (newField, newGarbageCleared) = field.lockDown(piece)
+
+        // missing hold and play piece logic
+//        let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
+
+        let state = GameState(field: newField,
+                              hold: hold,
+                              step: step + 1,
+                              garbageCleared: garbageCleared + newGarbageCleared,
+                              playPieceType: playPieceType)
+        return state
+    }
 }
 
 

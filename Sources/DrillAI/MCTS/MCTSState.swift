@@ -12,4 +12,5 @@ public protocol MCTSState {
     associatedtype Action
 
     func getLegalActions() -> [Action]
+    func getNextState(for: Action) -> Self
 }

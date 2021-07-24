@@ -24,7 +24,7 @@ import Foundation
 //      let depth = node.step - root.step
 //
 //      // Evaluation & backpropagation
-//      node.setupChildren(playPieceType: pieceSequence[depth])
+//      node.expand() // node.setupChildren(playPieceType: pieceSequence[depth])
 //
 //      let (value, priors) = bctsEvaluate(node, depth: depth)
 ////       let (value, priors) = modelEvaluate(model: model,
@@ -100,7 +100,7 @@ import Foundation
 //      // Setup children
 //      let depth = node.step - root.step
 //      let playPieceType = pieceSequence[depth]
-//      node.setupChildren(playPieceType: playPieceType)
+//      node.expand() // node.setupChildren(playPieceType: playPieceType)
 //
 //      // Save priors, re-normalize here
 //      let priors = parseModelPolicy(policyOutput: output.policy[index],

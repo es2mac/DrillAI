@@ -107,30 +107,10 @@ extension MCTSNode {
 
         return nextActions
     }
-}
 
-
-@available(macOSApplicationExtension 10.15, *)
-extension MCTSNode where State == GameState {
-    func getHighestValuedChild() -> MCTSNode {
-        assert(hasChildren, "Can't get highest valued child before having children")
-        let bestIndex = bestValuedChildIndex
-        return children[bestIndex] ?? initiateChildNode(bestIndex)
-    }
-
-    func setupChildren(playPieceType: Tetromino) {
-        // Rewrote this as expand()
-    }
-
-    func initiateChildNode(_ index: Int) -> MCTSNode {
-        let placedPiece = nextActions[index]
-        let (nextField, newGarbageCleared) = state.field.lockDown(placedPiece)
-        let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
-
-        let newState = GameState(field: nextField,
-                                 hold: newHold,
-                                 step: state.step + 1,
-                                 garbageCleared: state.garbageCleared + newGarbageCleared)
+    func initiateChildNode(at index: Int) -> MCTSNode {
+        let action = nextActions[index]
+        let newState = state.getNextState(for: action)
         let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
 
         children[index] = childNode
@@ -141,6 +121,11 @@ extension MCTSNode where State == GameState {
 
 @available(macOSApplicationExtension 10.15, *)
 extension MCTSNode {
+    func getHighestValuedChild() -> MCTSNode {
+        assert(hasChildren, "Can't get highest valued child before having children")
+        let bestIndex = bestValuedChildIndex
+        return children[bestIndex] ?? initiateChildNode(at: bestIndex)
+    }
 
     /// Next move selection: Probabilistic (using softmax of visit counts)
     func getChildWithWeightedProbability() -> MCTSNode? {
