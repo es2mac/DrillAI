@@ -39,7 +39,6 @@ final class GarbageGeneratorTests: XCTestCase {
         let differences = (0 ..< 100).map { i in
             generator[i + 1] - generator[i]
         }
-        print(differences)
         XCTAssertNil(differences.firstIndex(of: 0))
     }
 
