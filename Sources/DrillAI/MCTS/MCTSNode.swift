@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 
-public final class MCTSNode<State, Action> {
+public final class MCTSNode<State: MCTSState, Action> where State.Action == Action {
 
     /// State of the game at this node
     public let state: State
@@ -28,44 +28,55 @@ public final class MCTSNode<State, Action> {
     /// The next few properties are all tied to actions, so they are all implicitly
     /// matched: Each action has a prior and a child, and W & N associated with
     /// each child.
-    public var nextActions = [Action]()
+    public private(set) var nextActions = [Action]()
 
     /// The children of a node are initialized very lazily as storing states might
     /// consume a lot of memory.
     /// The children array should be initialized with nil's of the correct count
     /// when we get the actions, and for each child, the state and node are generated
     /// only when we decide to explore it.
-    public var children = [MCTSNode?]()
+    public private(set) var children = [MCTSNode?]()
 
     /// Priors, like the Bayesian prior probability, can be thought of as a
-    /// sense/intuition of how good an action is likely to be.
-    public var priors = [Double]()
+    /// sense/intuition of how good an action is likely to be.  When there's no
+    /// reasonable estimate for priors, it may help to set it to some noise to
+    /// create randomness.
+    public internal(set) var priors = [Double]()
 
     /// W is the aggregate value of all the expanded (explored/evaluated) nodes under
     /// each children, including the children themselves.  Conversely we can say that
     /// for each node, its W and N values are stored in its parent, not itself.
     /// We can calculate an average value by dividing with N, getting a sense of how
     /// good an action is.
-    public var childW = [Double]()
+    public private(set) var childW = [Double]()
 
     /// N is the aggregate visit counts of all the expanded nodes under each children,
     /// including the children themselves.  Because MCTS balances exploration and
     /// exploitation, it would visit nodes with good values more often, so the child
     /// with highest N is essentially the "best."
-    public var childN = [Double]()
+    public private(set) var childN = [Double]()
 
+    /// Here a node is expanded when the `expand()` method has been called, so that
+    /// next actions have been found, and related fields are initialized.
+    ///
     /// A node goes through several stages during tree search.
     ///
     /// - Initialized with a game state
     /// - State evaluated, obtaining a value and priors.  Technically we don't need
     ///   the priors until we decide to choose a children for further exploration,
     ///   but if we're using neural networks, the two are evaluated together.
-    /// - Actions figured out.  This should happen alongside state evaluation,
-    ///   because we only want to keep the priors for valid actions.
+    /// - Next legal actions figured out.  Each action would give a new state and
+    ///   a new child, but they will be instantiated lazily.  So at this point,
+    ///   we say the node is expanded.
     ///
-    /// Since evaluating state & prior and finding actions are all tied together,
-    /// we refer to this group of actions as "expanding" the node.
-    var isExpanded: Bool = false
+    /// Although the node doesn't really need to be expanded until we want to
+    /// explore its children, we need to know the legal actions to interpret the
+    /// priors, so the node will have to be expanded when the node's state
+    /// evaluation is done.
+    ///
+    /// So basically if expand() is done upon completing evaluation, isExpanded
+    /// can also stand in for "isEvaluated."
+    private(set) var isExpanded: Bool = false
 
     public init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
         self.state = state
@@ -74,8 +85,33 @@ public final class MCTSNode<State, Action> {
     }
 }
 
+
+extension MCTSNode {
+    /// Find all legal actions, and set up the corresponding children etc.
+    /// Returns the next actions as a convenience.
+    func expand() -> [Action] {
+        guard !isExpanded else {
+            assertionFailure("Expansion should only happen once")
+            return nextActions
+        }
+
+        nextActions = state.getLegalActions()
+
+        let count = nextActions.count
+        let zerosVector = [Double](repeating: 0, count: count)
+
+        children = [MCTSNode?](repeating: nil, count: count)
+        priors = zerosVector
+        childW = zerosVector
+        childN = zerosVector
+
+        return nextActions
+    }
+}
+
+
 @available(macOSApplicationExtension 10.15, *)
-extension MCTSNode where State == GameState, Action == Piece {
+extension MCTSNode where State == GameState {
     func getHighestValuedChild() -> MCTSNode {
         assert(hasChildren, "Can't get highest valued child before having children")
         let bestIndex = bestValuedChildIndex
@@ -83,26 +119,7 @@ extension MCTSNode where State == GameState, Action == Piece {
     }
 
     func setupChildren(playPieceType: Tetromino) {
-        assert(!hasChildren, "setupChildren should only need to be done once")
-
-        // The node didn't need to know the play piece until this point, where it
-        // needs the play piece to find all possible actions.  Save the play piece
-        // for later when initiating child nodes (because the child node's hold
-        // piece may be the current play piece or the current hold piece)
-//        self.state.playPieceType = playPieceType
-
-        let availableTypes = (playPieceType == state.hold) ? [state.hold] : [state.hold, playPieceType]
-        nextActions = state.field.findAllSimplePlacements(for: availableTypes)
-
-        let count = nextActions.count
-
-        children = Array<MCTSNode?>.init(repeating: nil, count: count)
-        //        priors = Tensor(randomUniform: [count]) * 0.01 + (1 / Double(count + 1))
-        priors = [Double]()
-        //        childW = Tensor(zeros: [count])
-        childW = [Double]()
-        //        childN = Tensor(zeros: [count])
-        childN = [Double]()
+        // Rewrote this as expand()
     }
 
     func initiateChildNode(_ index: Int) -> MCTSNode {
@@ -123,7 +140,7 @@ extension MCTSNode where State == GameState, Action == Piece {
 
 
 @available(macOSApplicationExtension 10.15, *)
-extension MCTSNode where State == GameState, Action == Piece {
+extension MCTSNode {
 
     /// Next move selection: Probabilistic (using softmax of visit counts)
     func getChildWithWeightedProbability() -> MCTSNode? {
