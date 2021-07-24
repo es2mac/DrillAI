@@ -90,6 +90,7 @@ extension MCTSNode {
 
     /// Find all legal actions, and set up the corresponding children etc.
     /// Returns the next actions as a convenience.
+    @discardableResult
     func expand() -> [Action] {
         guard !isExpanded else {
             assertionFailure("Expansion should only happen once")
