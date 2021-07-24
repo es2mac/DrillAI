@@ -6,23 +6,37 @@
 //
 
 import Foundation
+import GameplayKit
 
 
-class GarbageGenerator {
-  private var holePositions: [Int] = [Int.random(in: 0..<10)]
+@available(macOSApplicationExtension 10.11, *)
+public final class GarbageGenerator {
 
-  var offset = 0
+    private let randomSource: GKMersenneTwisterRandomSource
+    private var holePositions: [Int]
 
-  init() {}
+    public let seed: UInt64
 
-  subscript(index: Int) -> Int16 {
-    get {
-      let internalIndex = index + offset
-      while internalIndex >= holePositions.count {
-        let lastHolePosition = holePositions.last!
-        holePositions.append((lastHolePosition + Int.random(in: 1..<10)) % 10)
-      }
-      return 0b11111_11111 ^ (1 << holePositions[internalIndex])
+    public init() {
+        let randomSource = GKMersenneTwisterRandomSource()
+        self.randomSource = randomSource
+        self.holePositions = [randomSource.nextInt(upperBound: 10)]
+        self.seed = randomSource.seed
     }
-  }
+
+    public init(seed: UInt64) {
+        let randomSource = GKMersenneTwisterRandomSource(seed: seed)
+        self.randomSource = randomSource
+        self.holePositions = [randomSource.nextInt(upperBound: 10)]
+        self.seed = seed
+    }
+
+    subscript(index: Int) -> Int16 {
+        while index >= holePositions.count {
+            let lastHolePosition = holePositions.last!
+            let increment = 1 + randomSource.nextInt(upperBound: 9)
+            holePositions.append((lastHolePosition + increment) % 10)
+        }
+        return 0b11111_11111 ^ (1 << holePositions[index])
+    }
 }
