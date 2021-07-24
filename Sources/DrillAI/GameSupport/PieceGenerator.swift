@@ -21,8 +21,7 @@ public final class PieceGenerator {
     public let seed: UInt64
 
     public init() {
-        let randomSource = GKMersenneTwisterRandomSource()
-        self.randomSource = randomSource
+        self.randomSource = GKMersenneTwisterRandomSource()
         self.seed = randomSource.seed
     }
 

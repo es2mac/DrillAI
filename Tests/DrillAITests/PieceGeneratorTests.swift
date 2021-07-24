@@ -8,7 +8,7 @@ final class PieceGeneratorTests: XCTestCase {
         XCTAssertNoThrow(generator[0])
     }
 
-    func testGeneratorProducesArbitraryPiece() throws {
+    func testGeneratorProducesArbitraryPieces() throws {
         let generator = PieceGenerator()
         XCTAssertNoThrow(generator[9])
     }
