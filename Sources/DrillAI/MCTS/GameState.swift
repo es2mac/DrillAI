@@ -15,6 +15,10 @@ import Foundation
  From the outside, a caller doesn't really need to know what's held, as long as the
  state can properly figure out what are the possible next actions.  E.g. when hold
  is nil, we can actually play the next two pieces.
+
+ Suppose the piece and garbage generators are outside, and the state's field may
+ only be a partial portion near the top, I might need a reference pointer back to
+ something that manages the game
  */
 struct GameState {
     let field: Field
