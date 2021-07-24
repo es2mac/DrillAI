@@ -48,13 +48,13 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
     /// for each node, its W and N values are stored in its parent, not itself.
     /// We can calculate an average value by dividing with N, getting a sense of how
     /// good an action is.
-    public private(set) var childW = [Double]()
+    public internal(set) var childW = [Double]()
 
     /// N is the aggregate visit counts of all the expanded nodes under each children,
     /// including the children themselves.  Because MCTS balances exploration and
     /// exploitation, it would visit nodes with good values more often, so the child
     /// with highest N is essentially the "best."
-    public private(set) var childN = [Double]()
+    public internal(set) var childN = [Double]()
 
     /// Here a node is expanded when the `expand()` method has been called, so that
     /// next actions have been found, and related fields are initialized.
@@ -78,7 +78,7 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
     /// can also stand in for "isEvaluated."
     private(set) var isExpanded: Bool = false
 
-    public init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
+    init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
         self.state = state
         self.parent = parent
         self.indexInParent = indexInParent
