@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 
-public class MCTSNode<State, Action> {
+public final class MCTSNode<State, Action> {
 
     /// State of the game at this node
     public let state: State
