@@ -87,6 +87,7 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
 
 
 extension MCTSNode {
+
     /// Find all legal actions, and set up the corresponding children etc.
     /// Returns the next actions as a convenience.
     func expand() -> [Action] {
@@ -105,10 +106,17 @@ extension MCTSNode {
         childW = zerosVector
         childN = zerosVector
 
+        isExpanded = true
+
         return nextActions
     }
 
-    func initiateChildNode(at index: Int) -> MCTSNode {
+    /// Get a child node, initialize the node if it hasn't been already.
+    private func getOrInitializeChildNode(at index: Int) -> MCTSNode {
+        if let childNode = children[index] {
+            return childNode
+        }
+
         let action = nextActions[index]
         let newState = state.getNextState(for: action)
         let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
@@ -121,102 +129,89 @@ extension MCTSNode {
 
 @available(macOSApplicationExtension 10.15, *)
 extension MCTSNode {
-    func getHighestValuedChild() -> MCTSNode {
-        assert(hasChildren, "Can't get highest valued child before having children")
-        let bestIndex = bestValuedChildIndex
-        return children[bestIndex] ?? initiateChildNode(at: bestIndex)
-    }
 
-    /// Next move selection: Probabilistic (using softmax of visit counts)
-    func getChildWithWeightedProbability() -> MCTSNode? {
-        guard hasChildren else { return nil }
-
-        //    let distribution = softmax(childN)
-        let distribution = childN
-        //    var randomTarget = Tensor(Double.random(in: 0..<1))
-        var randomTarget = Double.random(in: 0.0..<1.0)
-
-        for index in 0 ..< children.count {
-            let probability = distribution[index]
-            if randomTarget < probability {
-                return children[index]
-            }
-            randomTarget -= probability
-        }
-        return nil
-    }
-}
-
-
-
-@available(macOSApplicationExtension 10.15, *)
-extension MCTSNode {
-    var hasChildren: Bool {
-        return !children.isEmpty
-    }
-
-    /* Note: this should be like the most visited below, but I can't move
-     `getHighestValuedChild` because it also instantiate the child.
-     The logic here is vague.  The children can be in several states:
-     - un-initialized, because actions have not been figured out
-     - empty, there is no action (though for Tetris, this is rare)
-     - particular child is nil
-     -
-     */
-    var bestValuedChildIndex: Int {
-        Int(vDSP.indexOfMaximum(childrenActionScores).0)
-    }
-
-    /// Next move selection: Deterministic
+    /// Get the child that corresponds to performing the best action.  Since MCTS
+    /// visit nodes while balancing exploration & exploitation, the most visited
+    /// child should end up being the one with the highest mean value.
+    /// Returns nil if there's no children, or if no child has been visited and
+    /// evaluated (N is incremented when back-propagating evaluation results).
     func getMostVisitedChild() -> MCTSNode? {
-        guard hasChildren else { return nil }
-        let index = Int(vDSP.indexOfMaximum(childN).0)
-
-        // This could still return nil, if no child has been visited
-        return children[index]
+        let (index, N) = vDSP.indexOfMaximum(childN)
+        return N > 0 ? children[Int(index)] : nil
     }
 
-
-    // Wish: Use normal arrays to do these vector calculations
-    // but use Accelerate (vDSP?) to speed it up!
-
-    //    var childrenActionScores: Tensor<Double> {
-    //        let Q = meanActionValue
-    //        let U = puctValue
-    //        return Q + U
-    //    }
-    var childrenActionScores: [Double] {
-        zip(meanActionValue, puctValue).map { Q, U in Q + U }
+    /// Get the child with the best action score, i.e. best target to explore,
+    /// balancing exploration & exploitation.
+    /// Returns nil if there's no children.
+    /// func getMostInterestingChild
+    func getBestSearchTargetChild() -> MCTSNode? {
+        bestActionValuedChildIndex.map(getOrInitializeChildNode)
     }
 
-    //    var meanActionValue: Tensor<Double> {
-    //        return childW / (1 + childN)
-    //    }
-    var meanActionValue: [Double] {
-        zip(childW, childN).map { W, N in W / (1 + N) }
+    /// Index of the child node with the best action score.
+    /// Nil if there's no children.
+    private var bestActionValuedChildIndex: Int? {
+        guard !children.isEmpty else {
+            return nil
+        }
+        return Int(vDSP.indexOfMaximum(actionScores).0)
     }
 
-    var puctValue: [Double] {
-        // The exploration constant may need some tuning as training progress,
-        // because so far the model is so bad it rarely clears lines,
-        // so the Q value is always very small.
-        //     let puctConstant = 0.5
-        let puctConstant = 2.0 // MiniGo uses 2.0
+    /// The PUCT action scores of all children, i.e. sum of the exploitation scores
+    /// (Q) and exploration scores (U).
+    /// Q = meanActionValues, U = puctValues, return Q + U
+    private var actionScores: [Double] {
+        vDSP.add(meanActionValues, puctValues)
+    }
+
+    /// The "Exploitation" part of the score
+    /// Returns Q = W / (1 + N)
+    private var meanActionValues: [Double] {
+        vDSP.divide(childW, vDSP.add(1, childN))
+    }
+
+    /// The "Exploration" part of the score
+    /// Returns U = some constants \* priors \* sqrt(totalN) / (1 / N)
+    /// Constants here needs tuning as training progress, e.g. when the model is
+    /// still really bad, Q is uselessly small, so we might need a smaller U.
+    private var puctValues: [Double] {
+
+        // Tune this multiple -- MiniGo uses 2.0.
+        let puctConstant = 2.0
+
+        let totalN = max(1, vDSP.sum(childN) - 1)
 
         // C: Exploration Rate, grows pretty slowly over time
         let cBase = 19652.0
         let cInitial = 1.25
-
-        let totalN = childN.reduce(0, +)
-        let adjustedTotalN = max(1, totalN - 1)
-
         let C = cInitial + log((1 + totalN + cBase) / cBase)
 
-        //        return puctConstant * C * priors * sqrt(adjustedTotalN) / (1 + childN)
-        return zip(priors, childN).map { prior, N in
-            puctConstant * C * prior * sqrt(adjustedTotalN) / ( 1 + N)
-        }
+        // puctConstant * C * priors * sqrt(totalN) / (1 + N)
+        let scalars = puctConstant * C * sqrt(totalN)
+        return vDSP.divide(
+            vDSP.multiply(scalars, priors),
+            vDSP.add(1, childN)
+        )
     }
+
+//    /// Next move selection: Probabilistic (using softmax of visit counts)
+//    func getChildWithWeightedProbability() -> MCTSNode? {
+//        guard hasChildren else { return nil }
+//
+//        //    let distribution = softmax(childN)
+//        let distribution = childN
+//        //    var randomTarget = Tensor(Double.random(in: 0..<1))
+//        var randomTarget = Double.random(in: 0.0..<1.0)
+//
+//        for index in 0 ..< children.count {
+//            let probability = distribution[index]
+//            if randomTarget < probability {
+//                return children[index]
+//            }
+//            randomTarget -= probability
+//        }
+//        return nil
+//    }
 }
 
 

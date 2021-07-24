@@ -60,7 +60,7 @@ import Foundation
 //  func selectBestUnevaluatedNode() -> MCTSNode {
 //    var node = root
 //    while node.hasChildren {
-//      node = node.getHighestValuedChild()
+//      node = node.getBestSearchTargetChild()
 //    }
 //    return node
 //  }
