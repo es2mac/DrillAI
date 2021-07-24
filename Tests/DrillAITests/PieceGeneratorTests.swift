@@ -45,11 +45,22 @@ final class PieceGeneratorTests: XCTestCase {
 
     func testGeneratorsWithDifferentSeedsGiveDifferentPieces() throws {
         let generator = PieceGenerator(seed: 42)
-        let pieces = (0..<300).map { generator[$0] }
+        let pieces = (0..<20).map { generator[$0] }
 
         let generator2 = PieceGenerator(seed: 9876)
-        let pieces2 = (0..<300).map { generator2[$0] }
+        let pieces2 = (0..<20).map { generator2[$0] }
 
         XCTAssertNotEqual(pieces, pieces2)
+    }
+
+    func testUsingOldSeedsToRecreateGeneratorProducesSameSequence() throws {
+        let generator = PieceGenerator()
+        let pieces = (0..<20).map { generator[$0] }
+
+        let seed = generator.seed
+        let generator2 = PieceGenerator(seed: seed)
+        let pieces2 = (0..<20).map { generator2[$0] }
+
+        XCTAssertEqual(pieces, pieces2)
     }
 }

@@ -9,38 +9,37 @@ import Foundation
 import GameplayKit
 
 
-/*
- Ideally this is should not be placed under MCTS, but right now gameplay is tied up with the MCTSTree (the tree needs full information of the game, that is, the field and play piece sequence), and trial game runs are done with manual control flows.
- */
+/// The Tetris piece random generator can generate arbitrarily many pieces.
+/// To access the pieces, subscript the generator directly.
+/// The seed can be saved to recreate the same sequence next time.
 @available(macOSApplicationExtension 10.11, *)
-class PieceGenerator {
+public final class PieceGenerator {
 
-    private let randomSource: GKRandomSource
+    private let randomSource: GKMersenneTwisterRandomSource
     private var storage: [Tetromino] = []
 
-    let seed: UInt64
-    var offset = 0
+    public let seed: UInt64
 
-    init() {
+    public init() {
         let randomSource = GKMersenneTwisterRandomSource()
         self.randomSource = randomSource
         self.seed = randomSource.seed
     }
 
-    init(seed: UInt64) {
+    public init(seed: UInt64) {
         self.randomSource = GKMersenneTwisterRandomSource(seed: seed)
         self.seed = seed
     }
 
-    subscript(index: Int) -> Tetromino {
-        get {
-            let internalIndex = index + offset
-            while internalIndex >= storage.count {
-                let bag = randomSource.arrayByShufflingObjects(in: Tetromino.allCases) as! [Tetromino]
-                storage.append(contentsOf: bag)
-            }
-            return storage[internalIndex]
+    public subscript(index: Int) -> Tetromino {
+        guard index >= 0 else {
+            fatalError("Invalid index.")
         }
+        while index >= storage.count {
+            let bag = randomSource.arrayByShufflingObjects(in: Tetromino.allCases) as! [Tetromino]
+            storage.append(contentsOf: bag)
+        }
+        return storage[index]
     }
 }
 
