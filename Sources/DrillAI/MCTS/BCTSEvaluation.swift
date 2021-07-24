@@ -1,5 +1,5 @@
 //
-//  BCTS.swift
+//  BCTSEvaluation.swift
 //
 //
 //  Created by Paul on 7/23/21.
@@ -7,6 +7,11 @@
 
 import Foundation
 
+
+/*
+ Refactoring note:  For BCTS, looks like I need the parent's state & action that
+ resulted in the current state, i.e. a short history.
+ */
 
 /// BCTS value, according to the Building Controllers for Tetris paper
 /// Thiery & Scherrer

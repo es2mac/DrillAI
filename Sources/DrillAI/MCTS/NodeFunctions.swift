@@ -9,10 +9,12 @@ import Foundation
 import Accelerate
 
 
+@available(macOSApplicationExtension 10.15, *)
 extension MCTSNode where State == GameState, Action == Piece {
-
-    var hasChildren: Bool {
-        return !children.isEmpty
+    func getHighestValuedChild() -> MCTSNode {
+        assert(hasChildren, "Can't get highest valued child before having children")
+        let bestIndex = bestValuedChildIndex
+        return children[bestIndex] ?? initiateChildNode(bestIndex)
     }
 
     func setupChildren(playPieceType: Tetromino) {
@@ -38,15 +40,6 @@ extension MCTSNode where State == GameState, Action == Piece {
         childN = [Double]()
     }
 
-    func getHighestValuedChild() -> MCTSNode {
-        assert(hasChildren, "Can't get highest valued child before having children")
-
-        //        let bestIndex = Int(childrenActionScores.argmax().scalarized())
-        let bestIndex = childrenActionScores.firstIndex(of: childrenActionScores.max()!)!
-
-        return children[bestIndex] ?? initiateChildNode(bestIndex)
-    }
-
     func initiateChildNode(_ index: Int) -> MCTSNode {
         let placedPiece = nextActions[index]
         let (nextField, newGarbageCleared) = state.field.lockDown(placedPiece)
@@ -61,64 +54,11 @@ extension MCTSNode where State == GameState, Action == Piece {
         children[index] = childNode
         return childNode
     }
-
-    // Wish: Use normal arrays to do these vector calculations
-    // but use Accelerate (vDSP?) to speed it up!
-
-    //    var childrenActionScores: Tensor<Double> {
-    //        let Q = meanActionValue
-    //        let U = puctValue
-    //        return Q + U
-    //    }
-    var childrenActionScores: [Double] {
-        zip(meanActionValue, puctValue).map { Q, U in Q + U }
-    }
-
-    //    var meanActionValue: Tensor<Double> {
-    //        return childW / (1 + childN)
-    //    }
-    var meanActionValue: [Double] {
-        zip(childW, childN).map { W, N in W / (1 + N) }
-    }
-
-    var puctValue: [Double] {
-        // The exploration constant may need some tuning as training progress,
-        // because so far the model is so bad it rarely clears lines,
-        // so the Q value is always very small.
-        //     let puctConstant = 0.5
-        let puctConstant = 2.0 // MiniGo uses 2.0
-
-        // C: Exploration Rate, grows pretty slowly over time
-        let cBase = 19652.0
-        let cInitial = 1.25
-
-        let totalN = childN.reduce(0, +)
-        let adjustedTotalN = max(1, totalN - 1)
-
-        let C = cInitial + log((1 + totalN + cBase) / cBase)
-
-        //        return puctConstant * C * priors * sqrt(adjustedTotalN) / (1 + childN)
-        return zip(priors, childN).map { prior, N in
-            puctConstant * C * prior * sqrt(adjustedTotalN) / ( 1 + N)
-        }
-    }
-
 }
 
 
+@available(macOSApplicationExtension 10.15, *)
 extension MCTSNode where State == GameState, Action == Piece {
-    /// Next move selection: Deterministic
-    func getMostVisitedChild() -> MCTSNode? {
-        guard hasChildren else { return nil }
-
-        //    let index = Int(childN.argmax().scalarized())
-        // vDSP.indexOfMaximum
-        let index = childN.firstIndex(of: childN.max()!)!
-        
-
-        // This could still return nil, if no child has been visited
-        return children[index]
-    }
 
     /// Next move selection: Probabilistic (using softmax of visit counts)
     func getChildWithWeightedProbability() -> MCTSNode? {
