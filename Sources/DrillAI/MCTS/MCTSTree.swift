@@ -8,49 +8,41 @@
 import Foundation
 
 
-// Need to fix: TetrisModel dependency.
+public actor MCTSTree<State: MCTSState, Action> where State.Action == Action {
+
+    private var root: MCTSNode<State, Action>
+
+    public init(initialState: State) {
+        root = MCTSNode(state: initialState)
+    }
+}
+
+extension MCTSTree {
+    typealias StatesInfo = [
+        (id: ObjectIdentifier, state: State, actions: [Action])
+    ]
+    typealias ExtendedStatesInfo = [
+        (id: ObjectIdentifier, state: State, actions: [Action],
+         lastState: State, lastAction: Action)
+    ]
+    typealias EvaluationResults = [
+        (id: ObjectIdentifier, value: Double, priors: [Double])
+    ]
+
+    func getNextUnevaluatedStates(targetCount: Int = 1) -> StatesInfo {
+       fatalError("Not implemented")
+    }
+
+    func getNextUnevaluatedStatesWithExtendedInfo(targetCount: Int = 1) -> ExtendedStatesInfo {
+       fatalError("Not implemented")
+    }
+
+    func updateWithEvaluationResults(_ results: EvaluationResults) {
+       fatalError("Not implemented")
+    }
+}
 
 
-//class MCTSTree {
-//  let pieceSequence: PieceGenerator
-//  let garbages: GarbageGenerator
-//
-//  let model: TetrisModel
-//
-//  var root: MCTSNode
-//
-//  init(field: Field,
-//       pieceSequence: PieceGenerator,
-//       garbages: GarbageGenerator,
-//       model: TetrisModel) {
-//    self.pieceSequence = pieceSequence
-//    self.garbages = garbages
-//    self.model = model
-//    self.root = MCTSNode(field: field,
-//                         hold: pieceSequence[0],
-//                         garbageCleared: 0)
-//    pieceSequence.offset += 1
-//  }
-//}
-//
-//extension MCTSTree {
-//  convenience init(model: TetrisModel = TetrisModel()) {
-//
-//    let pieceSequence = PieceGenerator()
-//    let garbages = GarbageGenerator()
-//    let field = Field.init(storage: (0 ..< 10).map { garbages[$0] },
-//                           garbageCount: 10)
-//
-//    self.init(field: field,
-//              pieceSequence: pieceSequence,
-//              garbages: garbages,
-//              model: model)
-//  }
-//}
-
-/*
- Tree climbing, er, traversal
- */
 //extension MCTSTree {
 //
 //  /// Do MCTS selection to find a new node to evaluate.
@@ -75,30 +67,4 @@ import Foundation
 //  }
 //
 //}
-
-//extension MCTSTree {
-//
-//    func getMostTraveledPath() -> [MCTSNode] {
-//    var path = [root]
-//    var node = root
-//    while let child = node.getMostVisitedChild() {
-//      path.append(child)
-//      node = child
-//    }
-//    return path
-//  }
-//
-//  func getReversePath(leaf: MCTSNode) -> [MCTSNode] {
-//    var path = [leaf]
-//    var node = leaf
-//    while let parent = node.parent {
-//      path.insert(parent, at: 0)
-//      node = parent
-//    }
-//    return path
-//  }
-//
-//}
-
-
 
