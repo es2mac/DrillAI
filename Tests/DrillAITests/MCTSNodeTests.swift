@@ -90,6 +90,39 @@ final class MCTSNodeTests: XCTestCase {
         XCTAssertNotNil(node.getBestSearchTargetChild())
     }
 
+    func testGetBestSearchTargetWithoutEvaluationFindsRandomChild() throws {
+        let state = DummyState()
+        let node = MCTSNode(state: state)
+
+        node.expand()
+
+        node.childW = [1, 1, 1]
+        node.childN = [2, 1, 2]
+
+        // Don't know what's a better way to test this, but if it's really random,
+        // I should get different results if I run it a bunch of times
+        var foundValues = Set<Int>()
+        for _ in 0 ..< 20 {
+            if let value = node.getBestSearchTargetChild()?.state.value {
+                foundValues.insert(value)
+            }
+        }
+        XCTAssertTrue(foundValues.count > 1)
+    }
+
+    func testSettingEvaluatedSetsNodeAsEvaluated() throws {
+        let state = DummyState()
+        let node = MCTSNode(state: state)
+
+        XCTAssertEqual(node.status, .initial)
+
+        node.expand()
+        XCTAssertEqual(node.status, .expanded)
+
+        node.setEvaluated(priors: [1, 2, 3])
+        XCTAssertEqual(node.status, .evaluated)
+    }
+
     func testGetBestSearchTargetFindsLeastVisitedChild() throws {
         let state = DummyState()
         let node = MCTSNode(state: state)
@@ -97,6 +130,7 @@ final class MCTSNodeTests: XCTestCase {
 
         node.childW = [1, 1, 1]
         node.childN = [2, 1, 2]
+        node.setEvaluated(priors: [1, 1, 1])
 
         let target = node.getBestSearchTargetChild()
         XCTAssertEqual(target?.state.value, 2)
@@ -109,6 +143,7 @@ final class MCTSNodeTests: XCTestCase {
 
         node.childW = [1, 1, 2]
         node.childN = [2, 2, 2]
+        node.setEvaluated(priors: [1, 1, 1])
 
         let target = node.getBestSearchTargetChild()
         XCTAssertEqual(target?.state.value, 3)
@@ -121,6 +156,7 @@ final class MCTSNodeTests: XCTestCase {
 
         node.childW = [1, 2, 1]
         node.childN = [2, 2, 2]
+        node.setEvaluated(priors: [1, 1, 1])
 
         let target = node.getMostVisitedChild()
         // actually have not done any visit, despite having scores

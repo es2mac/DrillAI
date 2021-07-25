@@ -42,7 +42,7 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
     /// sense/intuition of how good an action is likely to be.  When there's no
     /// reasonable estimate for priors, it may help to set it to some noise to
     /// create randomness.
-    public internal(set) var priors = [Double]()
+    public private(set) var priors = [Double]()
 
     /// W is the aggregate value of all the expanded (explored/evaluated) nodes under
     /// each children, including the children themselves.  Conversely we can say that
@@ -109,18 +109,16 @@ extension MCTSNode {
         return nextActions
     }
 
-    /// Get a child node, initialize the node if it hasn't been already.
-    private func getOrInitializeChildNode(at index: Int) -> MCTSNode {
-        if let childNode = children[index] {
-            return childNode
+    /// Set the node as evaluated, and the priors that result from the evaluation.
+    /// The actual evaluated value is handled separately, because back-propagating the
+    /// value with virtual loss etc. are better handled by the tree.
+    func setEvaluated(priors: [Double]) {
+        guard priors.count == children.count, case .expanded = status else {
+            assertionFailure()
+            return
         }
-
-        let action = nextActions[index]
-        let newState = state.getNextState(for: action)
-        let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
-
-        children[index] = childNode
-        return childNode
+        self.priors = priors
+        status = .evaluated
     }
 }
 
@@ -139,18 +137,40 @@ extension MCTSNode {
 
     /// Get the child with the best action score, i.e. best target to explore,
     /// balancing exploration & exploitation.
+    /// If this node has not been evaluated, then normally the children won't be either,
+    /// in which case a random index is returned.
     /// Returns nil if there's no children.
     func getBestSearchTargetChild() -> MCTSNode? {
         bestActionValuedChildIndex.map(getOrInitializeChildNode)
     }
 
     /// Index of the child node with the best action score.
+    /// If this node has not been evaluated, then normally the children won't be either,
+    /// in which case a random child index is returned.
     /// Returns nil if there's no children.
     private var bestActionValuedChildIndex: Int? {
         guard !children.isEmpty else {
             return nil
         }
-        return Int(vDSP.indexOfMaximum(actionScores).0)
+        switch status {
+        case .initial: return nil
+        case .expanded: return Int.random(in: 0..<children.count)
+        case .evaluated: return Int(vDSP.indexOfMaximum(actionScores).0)
+        }
+    }
+
+    /// Get a child node, initialize the node if it hasn't been already.
+    private func getOrInitializeChildNode(at index: Int) -> MCTSNode {
+        if let childNode = children[index] {
+            return childNode
+        }
+
+        let action = nextActions[index]
+        let newState = state.getNextState(for: action)
+        let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
+
+        children[index] = childNode
+        return childNode
     }
 
     /// The PUCT action scores of all children, i.e. sum of the exploitation scores
