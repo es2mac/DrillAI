@@ -2,19 +2,19 @@ import XCTest
 @testable import DrillAI
 
 
-final class DummyState: MCTSState {
+final class MockState: MCTSState {
     typealias Action = Int
     let value: Int
     func getLegalActions() -> [Int] {
         return [1, 2, 3].map { $0 + value * 10}
     }
-    func getNextState(for action: Int) -> DummyState {
-        return DummyState(value: action)
+    func getNextState(for action: Int) -> MockState {
+        return MockState(value: action)
     }
     init(value: Int = 0) { self.value = value }
 }
 
-extension DummyState: CustomDebugStringConvertible {
+extension MockState: CustomDebugStringConvertible {
     var debugDescription: String {
         "Dummy State \(value)"
     }
@@ -24,7 +24,7 @@ extension DummyState: CustomDebugStringConvertible {
 final class MCTSNodeTests: XCTestCase {
 
     func testNodeWithExplicitParentCanTraceBackToParent() throws {
-        let state = DummyState()
+        let state = MockState()
         let parent = MCTSNode(state: state)
         let child = MCTSNode(state: state, parent: parent, indexInParent: 0)
 
@@ -32,14 +32,14 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testNewNodesHaveNoAction() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
         XCTAssertEqual(node.status, .initial)
         XCTAssertEqual(node.children.count, 0)
     }
 
     func testNodesAreSetAsExpandedAfterExpand() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         XCTAssertEqual(node.status, .initial)
@@ -48,7 +48,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testExpandedNodesHaveNextActions() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         node.expand()
@@ -56,7 +56,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testExpandedNodesHaveStatisticsInitialized() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         node.expand()
@@ -68,7 +68,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetMostVisitedChildReturnsNilWhenNoVisit() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
         node.expand()
 
@@ -76,14 +76,14 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetBestSearchTargetChildReturnsNilWhenNotExpanded() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         XCTAssertNil(node.getBestSearchTargetChild())
     }
 
     func testGetBestSearchTargetChildReturnsSomethingAfterExpanded() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         node.expand()
@@ -91,7 +91,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetBestSearchTargetWithoutEvaluationFindsRandomChild() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         node.expand()
@@ -111,7 +111,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testSettingEvaluatedSetsNodeAsEvaluated() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
 
         XCTAssertEqual(node.status, .initial)
@@ -124,7 +124,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetBestSearchTargetFindsLeastVisitedChild() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
         node.expand()
 
@@ -137,7 +137,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetBestSearchTargetFindsHighestValuedChild() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
         node.expand()
 
@@ -150,7 +150,7 @@ final class MCTSNodeTests: XCTestCase {
     }
 
     func testGetMostVisitedChildReturnsVisitedChild() throws {
-        let state = DummyState()
+        let state = MockState()
         let node = MCTSNode(state: state)
         node.expand()
 
