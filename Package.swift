@@ -21,9 +21,15 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "DrillAI",
-            dependencies: []),
+            dependencies: [],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
+            ]),
         .testTarget(
             name: "DrillAITests",
-            dependencies: ["DrillAI"]),
+            dependencies: ["DrillAI"],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
+            ]),
     ]
 )

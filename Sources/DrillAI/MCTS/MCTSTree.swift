@@ -17,12 +17,13 @@ public actor MCTSTree<State: MCTSState, Action> where State.Action == Action {
     }
 }
 
+
 extension MCTSTree {
     typealias StatesInfo = [
-        (id: ObjectIdentifier, state: State, actions: [Action])
+        (id: ObjectIdentifier, state: State, nextActions: [Action])
     ]
     typealias ExtendedStatesInfo = [
-        (id: ObjectIdentifier, state: State, actions: [Action],
+        (id: ObjectIdentifier, state: State, nextActions: [Action],
          lastState: State, lastAction: Action)
     ]
     typealias EvaluationResults = [
@@ -30,7 +31,8 @@ extension MCTSTree {
     ]
 
     func getNextUnevaluatedStates(targetCount: Int = 1) -> StatesInfo {
-       fatalError("Not implemented")
+        return [(id: root.id, state: root.state, nextActions: root.nextActions)]
+//       fatalError("Not implemented")
     }
 
     func getNextUnevaluatedStatesWithExtendedInfo(targetCount: Int = 1) -> ExtendedStatesInfo {
