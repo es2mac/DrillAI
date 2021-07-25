@@ -18,7 +18,11 @@ import Foundation
 
  Suppose the piece and garbage generators are outside, and the state's field may
  only be a partial portion near the top, I might need a reference pointer back to
- something that manages the game
+ something that manages the game.
+
+ Evaluation will also need the garbage cleared count and the step, because in addition
+ to how easy it is to clear many lines from this point on, I also want to consider how
+ well it's been doing prior (as this is not like Go, where only the end result matters).
  */
 struct GameState {
     let field: Field
@@ -34,6 +38,7 @@ extension GameState: MCTSState {
 
     func getLegalActions() -> [Piece] {
         // Dummy, TBD
+        // Note: Eventually when the garbages are done, there should be no more action
 //        let availableTypes = (playPieceType == hold) ? [hold] : [hold, playPieceType]
 //        let nextActions = field.findAllSimplePlacements(for: availableTypes)
 //        return nextActions

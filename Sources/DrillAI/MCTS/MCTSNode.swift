@@ -140,13 +140,12 @@ extension MCTSNode {
     /// Get the child with the best action score, i.e. best target to explore,
     /// balancing exploration & exploitation.
     /// Returns nil if there's no children.
-    /// func getMostInterestingChild
     func getBestSearchTargetChild() -> MCTSNode? {
         bestActionValuedChildIndex.map(getOrInitializeChildNode)
     }
 
     /// Index of the child node with the best action score.
-    /// Nil if there's no children.
+    /// Returns nil if there's no children.
     private var bestActionValuedChildIndex: Int? {
         guard !children.isEmpty else {
             return nil
