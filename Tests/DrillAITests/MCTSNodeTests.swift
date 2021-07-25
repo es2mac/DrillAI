@@ -6,7 +6,7 @@ final class DummyState: MCTSState {
     typealias Action = Int
     let value: Int
     func getLegalActions() -> [Int] {
-        return [10, 11, 12]
+        return [1, 2, 3].map { $0 + value * 10}
     }
     func getNextState(for action: Int) -> DummyState {
         return DummyState(value: action)
@@ -99,7 +99,7 @@ final class MCTSNodeTests: XCTestCase {
         node.childN = [2, 1, 2]
 
         let target = node.getBestSearchTargetChild()
-        XCTAssertEqual(target?.state.value, 11)
+        XCTAssertEqual(target?.state.value, 2)
     }
 
     func testGetBestSearchTargetFindsHighestValuedChild() throws {
@@ -111,7 +111,7 @@ final class MCTSNodeTests: XCTestCase {
         node.childN = [2, 2, 2]
 
         let target = node.getBestSearchTargetChild()
-        XCTAssertEqual(target?.state.value, 12)
+        XCTAssertEqual(target?.state.value, 3)
     }
 
     func testGetMostVisitedChildReturnsVisitedChild() throws {
