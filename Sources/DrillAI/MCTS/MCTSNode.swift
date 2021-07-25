@@ -125,7 +125,6 @@ extension MCTSNode {
 }
 
 
-@available(macOSApplicationExtension 10.15, *)
 extension MCTSNode {
 
     /// Get the child that corresponds to performing the best action.  Since MCTS

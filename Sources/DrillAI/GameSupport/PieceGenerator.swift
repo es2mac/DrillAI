@@ -12,7 +12,6 @@ import GameplayKit
 /// The Tetris piece random generator can generate arbitrarily many pieces.
 /// To access the pieces, subscript the generator directly.
 /// The seed can be saved to recreate the same sequence next time.
-@available(macOSApplicationExtension 10.11, *)
 public final class PieceGenerator {
 
     private let randomSource: GKMersenneTwisterRandomSource

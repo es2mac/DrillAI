@@ -9,7 +9,6 @@ import Foundation
 import GameplayKit
 
 
-@available(macOSApplicationExtension 10.11, *)
 public final class GarbageGenerator {
 
     private let randomSource: GKMersenneTwisterRandomSource
