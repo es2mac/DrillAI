@@ -34,7 +34,7 @@ final class MCTSNodeTests: XCTestCase {
     func testNewNodesHaveNoAction() throws {
         let state = DummyState()
         let node = MCTSNode(state: state)
-        XCTAssertFalse(node.isExpanded)
+        XCTAssertEqual(node.status, .initial)
         XCTAssertEqual(node.children.count, 0)
     }
 
@@ -42,9 +42,9 @@ final class MCTSNodeTests: XCTestCase {
         let state = DummyState()
         let node = MCTSNode(state: state)
 
-        XCTAssertFalse(node.isExpanded)
+        XCTAssertEqual(node.status, .initial)
         node.expand()
-        XCTAssertTrue(node.isExpanded)
+        XCTAssertEqual(node.status, .expanded)
     }
 
     func testExpandedNodesHaveNextActions() throws {

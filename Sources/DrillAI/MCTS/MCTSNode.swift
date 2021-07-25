@@ -11,6 +11,10 @@ import Accelerate
 
 public final class MCTSNode<State: MCTSState, Action> where State.Action == Action {
 
+    public enum Status {
+        case initial, expanded, evaluated
+    }
+
     /// State of the game at this node
     public let state: State
 
@@ -23,11 +27,8 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
     /// when propagating values backwards.
     let indexInParent: Int
 
-    /// As finding all valid next actions might be an expensive operation,this
-    /// doesn't need to be computed until we want to expand this node.
-    /// The next few properties are all tied to actions, so they are all implicitly
-    /// matched: Each action has a prior and a child, and W & N associated with
-    /// each child.
+    /// The next actions are found via calling `expand` and it prepares the node for
+    /// evaluation, as well as setting up the associated children, priors, W and N.
     public private(set) var nextActions = [Action]()
 
     /// The children of a node are initialized very lazily as storing states might
@@ -61,22 +62,19 @@ public final class MCTSNode<State: MCTSState, Action> where State.Action == Acti
     ///
     /// A node goes through several stages during tree search.
     ///
-    /// - Initialized with a game state
-    /// - State evaluated, obtaining a value and priors.  Technically we don't need
-    ///   the priors until we decide to choose a children for further exploration,
-    ///   but if we're using neural networks, the two are evaluated together.
+    /// - Initialized with a game state, when it gets selected for visiting.
     /// - Next legal actions figured out.  Each action would give a new state and
-    ///   a new child, but they will be instantiated lazily.  So at this point,
+    ///   a new child, but those are instantiated lazily.  So at this point,
     ///   we say the node is expanded.
+    /// - State evaluated, obtaining a value and priors.  Technically we don't need
+    ///   the priors until we want to choose a children for further exploration,
+    ///   but if we're using neural networks, the two are evaluated together.
     ///
-    /// Although the node doesn't really need to be expanded until we want to
-    /// explore its children, we need to know the legal actions to interpret the
-    /// priors, so the node will have to be expanded when the node's state
-    /// evaluation is done.
-    ///
-    /// So basically if expand() is done upon completing evaluation, isExpanded
-    /// can also stand in for "isEvaluated."
-    private(set) var isExpanded: Bool = false
+    /// Because priors are tied with value evaluation, and next actions are needed to
+    /// interpret priors, the node initialization - expansion - start evaluation
+    /// happen in a row, and the node's status would be "expanded."  When the evaluation
+    /// result comes back, it is "evaluated."
+    private(set) var status: Status = .initial
 
     init(state: State, parent: MCTSNode? = nil, indexInParent: Int = 0) {
         self.state = state
@@ -92,8 +90,7 @@ extension MCTSNode {
     /// Returns the next actions as a convenience.
     @discardableResult
     func expand() -> [Action] {
-        guard !isExpanded else {
-            assertionFailure("Expansion should only happen once")
+        guard case .initial = status else {
             return nextActions
         }
 
@@ -107,7 +104,7 @@ extension MCTSNode {
         childW = zerosVector
         childN = zerosVector
 
-        isExpanded = true
+        status = .expanded
 
         return nextActions
     }
