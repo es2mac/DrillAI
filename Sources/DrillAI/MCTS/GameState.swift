@@ -25,11 +25,25 @@ import Foundation
  well it's been doing prior (as this is not like Go, where only the end result matters).
  */
 struct GameState {
+
+    static let defaultGarbageCount = 8
+
+    let environment: DigEnvironment
     let field: Field
-    let hold: Tetromino
-    let step: Int
+    let hold: Tetromino?
+    let dropCount: Int
     let garbageCleared: Int
-    var playPieceType: Tetromino? = nil // Not given until setting up children
+
+    init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil) {
+        self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
+
+        let storage: [Int16] = environment.garbages.suffix(Self.defaultGarbageCount)
+        self.field = Field(storage: storage, garbageCount: storage.count)
+
+        self.hold = nil
+        self.dropCount = 0
+        self.garbageCleared = 0
+    }
 }
 
 
@@ -47,25 +61,26 @@ extension GameState: MCTSState {
     }
 
     func getNextState(for piece: Piece) -> GameState {
-        assert(field.canPlace(piece))
+//        assert(field.canPlace(piece))
 
-        let (newField, newGarbageCleared) = field.lockDown(piece)
+//        let (newField, newGarbageCleared) = field.lockDown(piece)
 
         // missing hold and play piece logic
 //        let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
 
-        let state = GameState(field: newField,
-                              hold: hold,
-                              step: step + 1,
-                              garbageCleared: garbageCleared + newGarbageCleared,
-                              playPieceType: playPieceType)
-        return state
+//        let state = GameState(field: newField,
+//                              hold: hold,
+//                              step: step + 1,
+//                              garbageCleared: garbageCleared + newGarbageCleared,
+//                              playPieceType: playPieceType)
+//        return state
+        return self
     }
 }
 
 
 extension GameState: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "hold: \(hold), cleared: \(garbageCleared), step: \(step)"
+        return "hold: \(hold), cleared: \(garbageCleared), dropCount: \(dropCount)"
     }
 }
