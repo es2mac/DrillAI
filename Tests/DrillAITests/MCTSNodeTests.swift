@@ -6,7 +6,7 @@ final class MockState: MCTSState {
     typealias Action = Int
     let value: Int
     var makeActionsAction: (Int) -> [Int] = { key in
-        return [1, 2, 3]
+        return [1, 2, 3].map { key * 10 + $0 }
     }
     func getLegalActions() -> [Int] {
         return makeActionsAction(value)
