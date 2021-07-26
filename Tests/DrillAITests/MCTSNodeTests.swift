@@ -123,6 +123,18 @@ final class MCTSNodeTests: XCTestCase {
         XCTAssertEqual(node.status, .evaluated)
     }
 
+    func testSettingEvaluatedWithoutPriorsGenerateDefaultPriors() throws {
+        let state = MockState()
+        let node = MCTSNode(state: state)
+        node.expand()
+
+        node.setEvaluated()
+        XCTAssertEqual(node.priors.count, 3)
+        for prior in node.priors {
+            XCTAssertEqualWithAccuracy(prior, 0.333, accuracy: 0.01)
+        }
+    }
+
     func testGetBestSearchTargetFindsLeastVisitedChild() throws {
         let state = MockState()
         let node = MCTSNode(state: state)

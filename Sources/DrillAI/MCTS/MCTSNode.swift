@@ -112,12 +112,19 @@ extension MCTSNode {
     /// Set the node as evaluated, and the priors that result from the evaluation.
     /// The actual evaluated value is handled separately, because back-propagating the
     /// value with virtual loss etc. are better handled by the tree.
-    func setEvaluated(priors: [Double]) {
-        guard priors.count == children.count, case .expanded = status else {
+    /// If no priors are given, some default priors will be set (uniform with noise).
+    func setEvaluated(priors: [Double]? = nil) {
+        guard case .expanded = status else {
             assertionFailure()
             return
         }
-        self.priors = priors
+        if let priors = priors {
+            assert(priors.count == children.count)
+            self.priors = priors
+        } else {
+            let weights = children.map { _ in Double.random(in: 99...101) }
+            self.priors = vDSP.divide(weights, vDSP.sum(weights))
+        }
         status = .evaluated
     }
 }
