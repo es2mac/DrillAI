@@ -29,9 +29,13 @@ extension MCTSTree {
          lastState: State?, lastAction: Action?)
     ]
     typealias EvaluationResults = [
-        (id: ObjectIdentifier, value: Double, priors: [Double])
+        (id: ObjectIdentifier, value: Double, priors: [Double]?)
     ]
 
+    /// Find a collection of unevaluated states most worth evaluating.  Any state
+    /// returned from here has an ID, and expects the evaluation result for the state
+    /// to return with that ID.  In the tree, the node corresponding to the state would
+    /// have a virtual loss recorded, which is reverted once the results come back.
     func getNextUnevaluatedStates(targetCount: Int = 1) -> StatesInfo {
         let nodes = getNextUnevaluatedNodes(targetCount: targetCount)
         return nodes.map { node in
@@ -39,6 +43,8 @@ extension MCTSTree {
         }
     }
 
+    /// Same as `getNextUnevaluatedStates` but including the parent's state, and the
+    /// action taken to get from the parent state to this state.
     func getNextUnevaluatedStatesWithExtendedInfo(targetCount: Int = 1) -> ExtendedStatesInfo {
         let nodes = getNextUnevaluatedNodes(targetCount: targetCount)
         return nodes.map { node in
@@ -48,6 +54,12 @@ extension MCTSTree {
         }
     }
 
+    /// Update the tree with evaluation results.  Each result should be associated with
+    /// a state that was gotten via the "get next unevaluated state" methods.
+    /// Conversely, each state that went out from there is expected to come back with
+    /// an evaluation.
+    /// The evaluation may have just a value and no priors, in which case some default
+    /// priors will be set (uniform with noise).
     func updateWithEvaluationResults(_ results: EvaluationResults) {
        fatalError("Not implemented")
     }
