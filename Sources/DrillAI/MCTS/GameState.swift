@@ -44,6 +44,14 @@ struct GameState {
         self.dropCount = 0
         self.garbageCleared = 0
     }
+
+    private init(environment: DigEnvironment, field: Field, hold: Tetromino?, dropCount: Int, garbageCleared: Int) {
+        self.environment = environment
+        self.field = field
+        self.hold = hold
+        self.dropCount = dropCount
+        self.garbageCleared = garbageCleared
+    }
 }
 
 
@@ -51,36 +59,54 @@ extension GameState: MCTSState {
     typealias Action = Piece
 
     func getLegalActions() -> [Piece] {
-        // Dummy, TBD
-        // Note: Eventually when the garbages are done, there should be no more action
-//        let availableTypes = (playPieceType == hold) ? [hold] : [hold, playPieceType]
-//        let nextActions = field.findAllSimplePlacements(for: availableTypes)
-//        return nextActions
-
-        return []
+        field.findAllSimplePlacements(for: playablePieces)
     }
 
     func getNextState(for piece: Piece) -> GameState {
-//        assert(field.canPlace(piece))
+        assert(playablePieces.contains(piece.type))
+        assert(field.canPlace(piece))
 
-//        let (newField, newGarbageCleared) = field.lockDown(piece)
+        var (newField, newGarbageCleared) = field.lockDown(piece)
 
-        // missing hold and play piece logic
-//        let newHold = (placedPiece.type == state.playPieceType) ? state.hold : state.playPieceType!
+        newGarbageCleared += garbageCleared
+        newField = fieldReplenishedWithGarbage(newField)
+        let newHold = (piece.type == playPiece) ? hold : playPiece
 
-//        let state = GameState(field: newField,
-//                              hold: hold,
-//                              step: step + 1,
-//                              garbageCleared: garbageCleared + newGarbageCleared,
-//                              playPieceType: playPieceType)
-//        return state
-        return self
+        return GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared)
+    }
+}
+
+
+extension GameState {
+    var playPiece: Tetromino {
+        hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
+    }
+
+    private var playablePieces: [Tetromino] {
+        let piece1 = hold ?? environment.pieces[dropCount]
+        let piece2 = environment.pieces[dropCount + 1]
+        return (piece1 == piece2) ? [piece1] : [piece1, piece2]
+    }
+
+    private func fieldReplenishedWithGarbage(_ newField: Field) -> Field {
+        let wantedAddCount = Self.defaultGarbageCount - newField.garbageCount
+        let hiddenLineCount = environment.garbages.count - garbageCleared - field.garbageCount
+        guard wantedAddCount > 0, hiddenLineCount > 0 else {
+            return newField
+        }
+
+        let addCount = min(wantedAddCount, hiddenLineCount)
+        let upperIndex = hiddenLineCount
+        let lowerIndex = hiddenLineCount - addCount
+        let storage: [Int16] = environment.garbages[lowerIndex ..< upperIndex] + newField.storage
+
+        return Field(storage: storage, garbageCount: newField.garbageCount + addCount)
     }
 }
 
 
 extension GameState: CustomDebugStringConvertible {
     public var debugDescription: String {
-        return "hold: \(hold), cleared: \(garbageCleared), dropCount: \(dropCount)"
+        return "hold: \(hold?.debugDescription ?? "-"), cleared: \(garbageCleared), dropCount: \(dropCount)"
     }
 }
