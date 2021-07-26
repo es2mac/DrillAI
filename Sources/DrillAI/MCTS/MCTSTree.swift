@@ -21,6 +21,15 @@ public actor MCTSTree<State: MCTSState, Action> where State.Action == Action {
 
 
 extension MCTSTree {
+    /// See the best actions so far, ordered by visit counts.
+    func getOrderedRootActions() -> [(action: Action, visits: Double)] {
+        zip(root.nextActions, root.childN)
+            .sorted { $0.1 > $1.1 }
+    }
+}
+
+
+extension MCTSTree {
     typealias StatesInfo = [
         (id: ObjectIdentifier, state: State, nextActions: [Action])
     ]
@@ -61,7 +70,9 @@ extension MCTSTree {
     /// The evaluation may have just a value and no priors, in which case some default
     /// priors will be set (uniform with noise).
     func updateWithEvaluationResults(_ results: EvaluationResults) {
-       fatalError("Not implemented")
+        // Reverse virtual loss and backprop value
+        // Set node as evaluated
+        fatalError("Not implemented")
     }
 }
 
