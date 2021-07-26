@@ -5,11 +5,16 @@ import XCTest
 final class MockState: MCTSState {
     typealias Action = Int
     let value: Int
+    var makeActionsAction: (Int) -> [Int] = { key in
+        return [1, 2, 3]
+    }
     func getLegalActions() -> [Int] {
-        return [1, 2, 3].map { $0 + value * 10}
+        return makeActionsAction(value)
     }
     func getNextState(for action: Int) -> MockState {
-        return MockState(value: action)
+        let nextState = MockState(value: action)
+        nextState.makeActionsAction = self.makeActionsAction
+        return nextState
     }
     init(value: Int = 0) { self.value = value }
 }
