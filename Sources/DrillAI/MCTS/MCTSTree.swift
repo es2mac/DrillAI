@@ -12,7 +12,7 @@ public actor MCTSTree<State: MCTSState, Action> where State.Action == Action {
     typealias Node = MCTSNode<State, Action>
 
     private var root: Node
-    private var virtualLosses: [ObjectIdentifier : Double] = [:]
+    private var virtualLosses: [ObjectIdentifier : (Node, Double)] = [:]
 
     public init(initialState: State) {
         root = Node(state: initialState)
@@ -56,8 +56,13 @@ extension MCTSTree {
 
 private extension MCTSTree {
 
+    /// Find leaf nodes for evaluation.  Since we want to get multiple nodes for
+    /// parallel evaluation, each time we find a node we add either a virtual loss, or
+    /// just a virtual visit, to encourage the next search to find something else.
+    /// Keeping track of virtual losses also implies that once a node has been sent
+    /// out here, it will not be sent out again until the evaluation result comes back
+    /// and reverts the virtual loss.
     func getNextUnevaluatedNodes(targetCount: Int) -> [Node] {
-
         var nodes = [Node]()
 
         let maxAttemptCount = 10 + 2 * targetCount
@@ -96,23 +101,32 @@ private extension MCTSTree {
         return node
     }
 
+    /// Give a virtual "lost" result to a node, when we've decided to evaluate it but
+    /// haven't gotten the evaluation result.  This should discourage the tree search
+    /// to go down this path, so that we can find new nodes for evaluation.  The virtual
+    /// losses are recorded, so they can be reverted when the results come back.
     func addAndRecordVirtualLoss(_ node: Node) -> (isNew: Bool, loss: Double) {
         backPropagate(from: node, value: -1, visits: 1)
 
-        if let previousLoss = virtualLosses[node.id] {
+        if let (_, previousLoss) = virtualLosses[node.id] {
             let loss = previousLoss - 1.0
-            virtualLosses[node.id] = loss
+            virtualLosses[node.id] = (node, loss)
             return (isNew: false, loss: loss)
         } else {
-            virtualLosses[node.id] = -1.0
+            virtualLosses[node.id] = (node, -1.0)
             return (isNew: true, loss: -1.0)
         }
     }
 
+    /// Give one visit and neutral value (0) to a node.  This should mildly discourage
+    /// the tree search to go down this path, but not influence the results too much,
+    /// because more visits are considered good.  Irreversible.
     func addVirtualVisit(_ node: Node) {
         backPropagate(from: node, value: 0, visits: 1)
     }
 
+    /// Propagate the evaluated value from the leaf node back up the tree.  Every node
+    /// in the path receives the updated information about its descendants.
     func backPropagate(from leaf: Node, value: Double, visits: Double) {
         var node = leaf
         while let parent = node.parent {
