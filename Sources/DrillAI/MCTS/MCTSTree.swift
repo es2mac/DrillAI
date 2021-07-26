@@ -26,6 +26,12 @@ extension MCTSTree {
         zip(root.nextActions, root.childN)
             .sorted { $0.1 > $1.1 }
     }
+
+    /// See how many outstanding evaluations we're still expecting to get back, which
+    /// is exactly the nodes that has a virtual loss waiting to be reverted.
+    func getOutstandingEvaluationsCount() -> Int {
+        virtualLosses.count
+    }
 }
 
 

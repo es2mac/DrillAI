@@ -29,7 +29,7 @@ let package = Package(
             name: "DrillAITests",
             dependencies: ["DrillAI"],
             swiftSettings: [
-                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking", "-Xfrontend", "-enable-experimental-concurrency"])
             ]),
     ]
 )
