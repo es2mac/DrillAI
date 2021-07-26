@@ -1,13 +1,22 @@
 
 Possible next steps:
 
-- Try in-memory model training (figure out saving/loading checkpoint or full model later, or just wait)
+- Document GameState
+- Document DigEnvironment
+- Design evaluator protocol
+- Work out BCTS evaluator
+- Make simple coordinator
+- Update this document
+
+
+Old items:
+
+- Try in-memory model training
 - Generate some data with BCTS method and feed to model, see what happens
 - Training with data augmentation: horizontal flip (though this could be problematic, because SRS rotation system isn't completely symmetric) (update: it is symmetric for all but the I piece), and raising / lowering field garbages
 - Implement finding slide moves and SRS twist moves
 - Further debug performance
 - Consider terminal nodes (field garbage count = 0).  This probably requires separating the concepts of "having children" and "have been evaluated". (Maybe store value in node as optional, non-nil means evaluated)
-- Limit to 10-line digs for now.  To work with e.g. 100-line dig, need to dynamically compose field with a limited number of garbage
 
 
 MCTS (my implementation, not exactly as commonly described):
