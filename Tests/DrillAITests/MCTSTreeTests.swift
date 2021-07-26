@@ -99,7 +99,7 @@ final class MCTSTreeTests: XCTestCase {
         XCTAssertEqual(info2.count, 0)
     }
 
-    func testSettingEvaluationResultsRevertsVisitCounts() async throws {
+    func testSettingEvaluationResultsDoesntChangeVisitCounts() async throws {
         let state = MockState()
         // Mock will only have one level of children
         state.makeActionsAction = { key in
@@ -111,14 +111,14 @@ final class MCTSTreeTests: XCTestCase {
         }
         let tree = MCTSTree(initialState: state)
 
-        // We should find all 4 nodes in the tree, but internally it'll attempt
-        // more than 32 searches (74 to be exact, so totalVisitCount would be 73)
+        // We should find all 4 nodes in the tree, and although internally it'll
+        // attempt more than 32 searches (74 to be exact), duplicate searches
+        // should not change the visit counts
         let info = await tree.getNextUnevaluatedStates(targetCount: 32)
         XCTAssertEqual(info.count, 4)
 
         let orderedActions = await tree.getOrderedRootActions()
-        let totalVisitCount = orderedActions.map(\.1).reduce(0, +)
-        XCTAssertGreaterThanOrEqual(totalVisitCount, 31)
+        XCTAssertEqual(orderedActions.map(\.1), [1.0, 1.0, 1.0])
 
         // Set evaluations for all 4 nodes and we should none outstanding
         let results: MCTSTree.EvaluationResults = info.map { item in
@@ -129,9 +129,16 @@ final class MCTSTreeTests: XCTestCase {
         let outstanding = await tree.getOutstandingEvaluationsCount()
         XCTAssertEqual(outstanding, 0)
 
-        // ...and the visit counts are properly reverted
+        // ...and the visit counts should still be the same
         let updatedActions = await tree.getOrderedRootActions()
-        XCTAssertEqual(updatedActions.count, 3)
         XCTAssertEqual(updatedActions.map(\.1), [1.0, 1.0, 1.0])
+
+        // Now if we continue doing searches, all the nodes are evaluated,
+        // so those will actually count as visits, but propagate with the
+        // old value without sending it out for evaluation
+        let info2 = await tree.getNextUnevaluatedStates(targetCount: 32)
+        XCTAssertEqual(info2.count, 0)
+        let finalActions = await tree.getOrderedRootActions()
+        XCTAssertGreaterThanOrEqual(finalActions.map(\.1).reduce(0, +), 32)
     }
 }

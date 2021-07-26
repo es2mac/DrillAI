@@ -81,7 +81,7 @@ extension MCTSTree {
             if let (node, virtualLoss) = virtualLosses.removeValue(forKey: id) {
                 backPropagate(from: node,
                               value: -virtualLoss + value,
-                              visits: virtualLoss + 1)
+                              visits: 0)
                 node.setEvaluated(priors: priors)
             } else { assertionFailure() }
         }
@@ -117,7 +117,7 @@ private extension MCTSTree {
                     }
                 }
             case .evaluated:
-                addVirtualVisit(node)
+                propagateOldValue(node)
             }
         }
 
@@ -140,24 +140,30 @@ private extension MCTSTree {
     /// haven't gotten the evaluation result.  This should discourage the tree search
     /// to go down this path, so that we can find new nodes for evaluation.  The virtual
     /// losses are recorded, so they can be reverted when the results come back.
+    /// Visit count is only incremented once.
     func addAndRecordVirtualLoss(_ node: Node) -> (isNew: Bool, loss: Double) {
-        backPropagate(from: node, value: -1, visits: 1)
-
+        let isNew: Bool
+        let loss: Double
         if let (_, previousLoss) = virtualLosses[node.id] {
-            let loss = previousLoss - 1.0
-            virtualLosses[node.id] = (node, loss)
-            return (isNew: false, loss: loss)
+            isNew = false
+            loss = previousLoss - 1.0
         } else {
-            virtualLosses[node.id] = (node, -1.0)
-            return (isNew: true, loss: -1.0)
+            isNew = true
+            loss = -1.0
         }
+        virtualLosses[node.id] = (node, loss)
+        backPropagate(from: node, value: -1, visits: isNew ? 1 : 0)
+        return (isNew: isNew, loss: loss)
     }
 
-    /// Give one visit and neutral value (0) to a node.  This should mildly discourage
-    /// the tree search to go down this path, but not influence the results too much,
-    /// because more visits are considered good.  Irreversible.
-    func addVirtualVisit(_ node: Node) {
-        backPropagate(from: node, value: 0, visits: 1)
+    /// When an evaluated node is selected, propagate with its old evaluated value.
+    /// This should mildly discourage the tree search to go down this path, because
+    /// Q will remain the same while U goes down.
+    func propagateOldValue(_ node: Node) {
+        guard let parent = node.parent else { return }
+        let index = node.indexInParent
+        let value = parent.childW[index] / parent.childN[index]
+        backPropagate(from: node, value: value, visits: 1)
     }
 
     /// Propagate the evaluated value from the leaf node back up the tree.  Every node

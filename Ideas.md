@@ -1,15 +1,16 @@
 
-Possible next steps:
+## Possible next steps
 
 - Document GameState
 - Document DigEnvironment
+
 - Design evaluator protocol
 - Work out BCTS evaluator
 - Make simple coordinator
 - Update this document
 
 
-Old items:
+## Old items
 
 - Try in-memory model training
 - Generate some data with BCTS method and feed to model, see what happens
