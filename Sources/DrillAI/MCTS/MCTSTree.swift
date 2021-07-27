@@ -8,8 +8,9 @@
 import Foundation
 
 
-public actor MCTSTree<State: MCTSState, Action> where State.Action == Action {
-    typealias Node = MCTSNode<State, Action>
+public actor MCTSTree<State: MCTSState> {
+    typealias Node = MCTSNode<State>
+    typealias Action = State.Action
 
     private var root: Node
     private var virtualLosses: [ObjectIdentifier : (Node, Double)] = [:]

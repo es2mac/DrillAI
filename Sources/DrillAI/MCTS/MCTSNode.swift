@@ -9,7 +9,8 @@ import Foundation
 import Accelerate
 
 
-public final class MCTSNode<State: MCTSState, Action> where State.Action == Action {
+public final class MCTSNode<State: MCTSState> {
+    public typealias Action = State.Action
 
     public enum Status {
         case initial, expanded, evaluated
