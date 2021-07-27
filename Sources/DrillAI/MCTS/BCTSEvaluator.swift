@@ -42,7 +42,6 @@ private extension BCTSEvaluator {
         // What if I split the BCTS components, use the field parts for state eval
         // and the action parts for prior?
         var value = calculateBCTSValue(field: field, piece: piece, parentField: parentField)
-        value.range
         value = max(-1, min(1, (value / 4000) + 0.5))
         return (id: entry.id, value: value, priors: nil)
     }
@@ -171,6 +170,135 @@ func calculateBCTSValue(field: Field, piece: Piece, parentField: Field) -> Doubl
            ( -1.61 * holeDepth) +
            (-24.04 * rowsWithHoles)
 }
+
+
+/// The part of BCTS that only concerns the current field.
+/// TBD:  How to normalize to between -1 and 1.
+func evaluate(field: Field) -> Double {
+    let lines = field.storage
+
+    // Row transitions
+    let rowTransitions: Double = lines.reduce(0.0) {
+        let left = ($1 << 1) + 1
+        let right = $1 + 1024
+        return $0 + Double((left ^ right).nonzeroBitCount)
+    }
+
+    // Column transitions
+    let columnTransitions: Double = zip(lines, lines.dropFirst() + [0]).reduce(0.0) {
+        $0 + Double(($1.0 ^ $1.1).nonzeroBitCount)
+    }
+
+    // Holes
+    var holeMask: Int16 = 0
+    var holeCount = 0
+    var rowsWithHolesCount = 0
+    var rowsWithHolesMask: Int16 = 0
+    for line in lines.reversed() {
+        let maskedLine = holeMask & ~line
+        holeMask |= line
+        if maskedLine != 0 {
+            holeCount += maskedLine.nonzeroBitCount
+            rowsWithHolesCount += 1
+            rowsWithHolesMask |= maskedLine
+        }
+    }
+
+    let holes = Double(holeCount)
+
+    // Indices of top filled cell of each column, -1 if empty (not used in score)
+    let columnTops: [Int] = (0 ..< 10).map { (index) -> Int in
+        let mask: Int16 = 1 << index
+        return lines.lastIndex { $0 & mask != 0 } ?? -1
+    }
+
+    // Cumulative wells
+    // Cheat a little and assume the first found well entrance "X.X" extends
+    // all the way to filled top, skip further checking
+    let walledLines = lines.map { ($0 << 1) | 0b1_00000_00000_1 }
+    let columnWellSums: [Int] = (0 ..< 10).map { (column) -> Int in
+        // Calculation first "AND" left side of the column, then shift it to "AND"
+        // right side of column.  Watch out that walledLines is shifted by 1
+        let columnTopIndex = columnTops[column]
+        let mask: Int16 = 1 << Int16(column)
+
+        var wellSum = 0
+        var index = walledLines.count - 1
+        while index > columnTopIndex {
+            let line = walledLines[index]
+            if ((line & mask) << 2) & line != 0 {
+                let wellHeight = index - columnTopIndex
+                wellSum = wellHeight * (wellHeight + 1) / 2
+                break
+            }
+            index -= 1
+        }
+        return wellSum
+    }
+
+    let cumulativeWells = Double(columnWellSums.reduce(0, +))
+
+    // Hole depth
+    let holeDepths: [Int] = (0 ..< 10).map { (column) -> Int in
+        let mask: Int16 = 1 << Int16(column)
+        if mask & rowsWithHolesMask == 0 {
+            return 0
+        }
+        // Find the last filled cell from the top filled cell, then down by 1
+        let columnTopIndex = columnTops[column]
+        let topHoleIndex = lines[...columnTopIndex].lastIndex { $0 & mask == 0 }!
+        return columnTopIndex - topHoleIndex
+    }
+
+    let holeDepth = Double(holeDepths.reduce(0, +))
+
+    // Rows with holes
+    let rowsWithHoles = Double(rowsWithHolesCount)
+
+    return ( -9.22 * rowTransitions) +
+           (-19.77 * columnTransitions) +
+           (-13.08 * holes) +
+           (-10.49 * cumulativeWells) +
+           ( -1.61 * holeDepth) +
+           (-24.04 * rowsWithHoles)
+}
+
+/// The part of BCTS that only concerns the piece placement.
+/// In BCTS it uses the last field and last piece, but it makes sense
+/// to be used for this field and next pieces as well.
+/// Normalization / turning to priors is also TBD.
+func evaluateMove(field: Field, piece: Piece) -> Double {
+    
+    // Landing height
+    let landingHeight = Double(piece.y - field.garbageCount + 1)
+
+    // Eroded piece cells
+    // (similar to locking down a piece on field)
+    let pieceIndex = piece.bitmaskIndex
+    let pieceMasks = pieceBitmasks[pieceIndex]
+    let boundOffsets = pieceBoundOffsets[pieceIndex]
+    let pieceLeft = piece.x - boundOffsets.left
+    let bottomRow = piece.y - boundOffsets.bottom
+
+    var linesCleared = 0
+    var cellsEroded = 0
+    for (i, mask) in pieceMasks.enumerated() {
+        let row = bottomRow + i
+        if row < field.height {
+            let line = field.storage[row]
+            if line | (mask << pieceLeft) == 0b11111_11111 {
+                linesCleared += 1
+                cellsEroded += (10 - line.nonzeroBitCount)
+            }
+        }
+    }
+
+    let erodedPieceCells = Double(linesCleared * cellsEroded)
+
+    return (-12.63 * landingHeight) +
+           (  6.60 * erodedPieceCells)
+}
+
 
 
 /*
