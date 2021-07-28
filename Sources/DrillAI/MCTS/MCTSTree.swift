@@ -22,11 +22,18 @@ public actor MCTSTree<State: MCTSState> {
 
 
 extension MCTSTree {
+
+    public struct ActionVisits {
+        public let action: Action
+        public let visits: Int
+    }
+    
     /// See the best actions so far, ordered by visit counts.  Empty when there is
     /// no action.
-    func getOrderedRootActions() -> [(action: Action, visits: Double)] {
+    func getOrderedRootActions() -> [ActionVisits] {
         zip(root.nextActions, root.childN)
             .sorted { $0.1 > $1.1 }
+            .map { ActionVisits(action: $0, visits: Int($1)) }
     }
 
     /// See how many outstanding evaluations we're still expecting to get back, which
