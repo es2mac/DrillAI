@@ -60,7 +60,10 @@ public extension GameState {
     typealias Action = Piece
 
     func getLegalActions() -> [Piece] {
-        field.findAllSimplePlacements(for: playablePieces)
+        if field.garbageCount == 0 {
+            return []
+        }
+        return field.findAllSimplePlacements(for: playablePieces)
     }
 
     func getNextState(for piece: Piece) -> GameState {
