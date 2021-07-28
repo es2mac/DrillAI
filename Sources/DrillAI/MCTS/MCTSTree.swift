@@ -51,6 +51,7 @@ extension MCTSTree {
     }
 
     func promoteRoot(action: Action) -> State where Action: Equatable {
+        // Note: this can happen pretty easily, maybe I'll do cancel here?
         assert(virtualLosses.count == 0)
 
         if let index = root.nextActions.index(of: action),

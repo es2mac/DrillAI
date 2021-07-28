@@ -30,9 +30,9 @@ public struct GameState {
 
     let environment: DigEnvironment
     public let field: Field
-    let hold: Tetromino?
-    let dropCount: Int
-    let garbageCleared: Int
+    public let hold: Tetromino?
+    public let dropCount: Int
+    public let garbageCleared: Int
 
     public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
