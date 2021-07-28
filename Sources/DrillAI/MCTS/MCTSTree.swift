@@ -9,8 +9,8 @@ import Foundation
 
 
 public actor MCTSTree<State: MCTSState> {
+    public typealias Action = State.Action
     typealias Node = MCTSNode<State>
-    typealias Action = State.Action
 
     private var root: Node
     private var virtualLosses: [ObjectIdentifier : (Node, Double)] = [:]
@@ -37,7 +37,7 @@ extension MCTSTree {
 }
 
 
-extension MCTSTree {
+public extension MCTSTree {
     typealias StatesInfo = [
         (id: ObjectIdentifier, state: State, nextActions: [Action])
     ]

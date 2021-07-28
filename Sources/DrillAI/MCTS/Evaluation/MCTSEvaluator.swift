@@ -7,11 +7,9 @@
 
 import Foundation
 
-protocol MCTSEvaluator {
+public protocol MCTSEvaluator {
     associatedtype State: MCTSState
-    associatedtype Info // e.g. MCTSTree.StatesInfo & MCTSTree.ExtendedStatesInfo
 
-
-    func evaluate(info: Info) async -> MCTSTree.EvaluationResults
+    func evaluate(info: MCTSTree<State>.StatesInfo) async -> MCTSTree.EvaluationResults
 }
 
