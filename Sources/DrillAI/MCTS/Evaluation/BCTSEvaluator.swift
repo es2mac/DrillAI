@@ -8,11 +8,14 @@
 import Foundation
 
 
-public final class BCTSEvaluator {}
+public final class BCTSEvaluator {
+    public init() {}
+}
 
-extension BCTSEvaluator: MCTSEvaluator {
-    typealias Action = Piece
+extension BCTSEvaluator: MCTSEvaluator {}
+public extension BCTSEvaluator {
     typealias State = GameState
+    typealias Action = Piece
     typealias Info = MCTSTree<GameState>.StatesInfo
     typealias Results = MCTSTree<GameState>.EvaluationResults
 
@@ -48,6 +51,11 @@ private extension BCTSEvaluator {
         let pastValue = rawPastValue * 4 - 1
         // Arbitrary interpolation & clamping
         let value = max(-1, min(1, (0.7 * fieldValue + 0.3 * pastValue)))
+
+        // If the field has no more garbage, give it a boost and don't need priors
+        if field.garbageCount == 0 {
+            return (id: id, value: (0.5 + 0.5 * value), priors: nil)
+        }
 
         // Assume evaluateMove in (-150 ~ 50)
         let rawPriors = nextActions.map { piece in
