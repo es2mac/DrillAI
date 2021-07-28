@@ -24,17 +24,17 @@ import Foundation
  to how easy it is to clear many lines from this point on, I also want to consider how
  well it's been doing prior (as this is not like Go, where only the end result matters).
  */
-struct GameState {
+public struct GameState {
 
     static let defaultGarbageCount = 8
 
     let environment: DigEnvironment
-    let field: Field
+    public let field: Field
     let hold: Tetromino?
     let dropCount: Int
     let garbageCleared: Int
 
-    init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil) {
+    public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
 
         let storage: [Int16] = environment.garbages.suffix(Self.defaultGarbageCount)
@@ -55,7 +55,8 @@ struct GameState {
 }
 
 
-extension GameState: MCTSState {
+extension GameState: MCTSState {}
+public extension GameState {
     typealias Action = Piece
 
     func getLegalActions() -> [Piece] {
