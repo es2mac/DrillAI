@@ -26,6 +26,10 @@ extension MCTSTree {
     public struct ActionVisits {
         public let action: Action
         public let visits: Int
+        public init(action: Action, visits: Int) {
+            self.action = action
+            self.visits = visits
+        }
     }
     
     /// See the best actions so far, ordered by visit counts.  Empty when there is
