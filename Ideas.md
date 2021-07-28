@@ -3,11 +3,27 @@
 
 - Document GameState
 - Document DigEnvironment
-
-- Design evaluator protocol
-- Work out BCTS evaluator
-- Make simple coordinator
 - Update this document
+
+
+- Tree implement promote root
+    - Tree implement cancelling outstanding evaluations
+    
+- For BCTS, suspecting that the line clears are weighted too heavily
+    - How do I display a reasonable view of the tree to see what's going on?
+    - Feels like sometimes it gets obsessed with a second-step good result
+      and that beats a first-step good result, but it shouldn't have seen
+      a terminal state yet, strange
+
+- Bot report full report on moves
+    - Maybe more info on the evals, puct, tree depth
+
+- Bot can decide whether there's a clear winner yet if there's a move that
+  is significantly pulling ahead on visit count
+  
+- Really curious about the duplication issue in the tree: put down 2 pieces in
+  different orders should really be the same, and if those are the most promising
+  moves they'd uselessly compete with each other and have overlapping subtrees
 
 
 ## Old items

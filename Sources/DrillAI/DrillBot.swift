@@ -8,9 +8,9 @@
 import Foundation
 
 
-public final class DrillBot<Evaluator: MCTSEvaluator> {
-    public typealias State = Evaluator.State
-    public typealias Action = State.Action
+public final class DrillBot<Evaluator: MCTSEvaluator> where Evaluator.State == GameState {
+    public typealias State = GameState
+    public typealias Action = Piece
     public typealias ActionVisits = MCTSTree<State>.ActionVisits
 
     private let tree: MCTSTree<State>
@@ -49,6 +49,11 @@ public final class DrillBot<Evaluator: MCTSEvaluator> {
 
     public func getSortedActions() async -> [ActionVisits] {
         return await tree.getOrderedRootActions()
+    }
+
+    public func advance(with action: Action) async -> State {
+        let newState = await tree.promoteRoot(action: action)
+        return newState
     }
 
     public func makeMoveWithCallback(action: @escaping ((Action?) -> Void)) {

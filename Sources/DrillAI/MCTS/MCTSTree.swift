@@ -45,6 +45,22 @@ extension MCTSTree {
     func getOutstandingEvaluationsCount() -> Int {
         virtualLosses.count
     }
+
+    func cancelOutstandingEvaluations() {
+        fatalError("Not implemented")
+    }
+
+    func promoteRoot(action: Action) -> State where Action: Equatable {
+        assert(virtualLosses.count == 0)
+
+        if let index = root.nextActions.index(of: action),
+           let child = root.children[index] {
+            root = child
+        } else {
+            assertionFailure("Not a valid next action")
+        }
+        return root.state
+    }
 }
 
 
