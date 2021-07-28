@@ -201,7 +201,7 @@ extension MCTSNode {
     private var puctValues: [Double] {
 
         // Tune this multiple -- MiniGo uses 2.0.
-        let puctConstant = 2.0
+        let puctConstant = 2.5
 
         let totalN = max(1, vDSP.sum(childN) - 1)
 
