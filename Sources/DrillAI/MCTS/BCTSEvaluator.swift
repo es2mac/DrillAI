@@ -13,23 +13,21 @@ public final class BCTSEvaluator {}
 extension BCTSEvaluator: MCTSEvaluator {
     typealias Action = Piece
     typealias State = GameState
-    typealias Info = MCTSTree<GameState>.ExtendedStatesInfo
+    typealias Info = MCTSTree<GameState>.StatesInfo
     typealias Results = MCTSTree<GameState>.EvaluationResults
 
-    func evaluate(info: MCTSTree<GameState>.ExtendedStatesInfo) async -> Results {
+    func evaluate(info: MCTSTree<GameState>.StatesInfo) async -> Results {
         return info.map(evaluate)
     }
 }
 
 private extension BCTSEvaluator {
 
-    func evaluate(_ entry: (id: ObjectIdentifier, state: State, nextActions: [Action],
-                            lastState: State?, lastAction: Action?)) -> (id: ObjectIdentifier,
-                                                                         value: Double, priors: [Double]?) {
-        guard let piece = entry.lastAction, let parentField = entry.lastState?.field else {
-            return (id: entry.id, value: 0.0, priors: nil)
-        }
-        let field = entry.state.field
+    func evaluate(_ entry: (id: ObjectIdentifier,
+                            state: State, nextActions: [Action])) -> (id: ObjectIdentifier,
+                                                                      value: Double, priors: [Double]?) {
+        let (id, state, nextActions) = entry
+        let field = state.field
 
         // How to use BCTS for a good evaluation is still TBD, can factor in
         // how many pieces are placed so far vs. how many garbages cleared so far,
@@ -41,9 +39,24 @@ private extension BCTSEvaluator {
         // Also, we might also think of a reasonable heuristic for priors.
         // What if I split the BCTS components, use the field parts for state eval
         // and the action parts for prior?
-        var value = calculateBCTSValue(field: field, piece: piece, parentField: parentField)
-        value = max(-1, min(1, (value / 4000) + 0.5))
-        return (id: entry.id, value: value, priors: nil)
+
+        // Assume (-4000 ~ 0)
+        let rawFieldValue = evaluateField(field)
+        let fieldValue = (rawFieldValue / 2000) + 1
+        // Assume (0 ~ 0.5)
+        let rawPastValue = Double(state.garbageCleared) / Double(state.dropCount + 1)
+        let pastValue = rawPastValue * 4 - 1
+        // Arbitrary interpolation & clamping
+        let value = max(-1, min(1, (0.7 * fieldValue + 0.3 * pastValue)))
+
+        // Assume evaluateMove in (-150 ~ 50)
+        let rawPriors = nextActions.map { piece in
+            evaluateMove(field: field, piece: piece) + 500
+        }
+        let rawSum = rawPriors.reduce(0, +)
+        let priors = rawPriors.map { $0 / rawSum }
+
+        return (id: id, value: value, priors: priors)
     }
 }
 
@@ -174,7 +187,7 @@ func calculateBCTSValue(field: Field, piece: Piece, parentField: Field) -> Doubl
 
 /// The part of BCTS that only concerns the current field.
 /// TBD:  How to normalize to between -1 and 1.
-func evaluate(field: Field) -> Double {
+private func evaluateField(_ field: Field) -> Double {
     let lines = field.storage
 
     // Row transitions
@@ -267,7 +280,7 @@ func evaluate(field: Field) -> Double {
 /// In BCTS it uses the last field and last piece, but it makes sense
 /// to be used for this field and next pieces as well.
 /// Normalization / turning to priors is also TBD.
-func evaluateMove(field: Field, piece: Piece) -> Double {
+private func evaluateMove(field: Field, piece: Piece) -> Double {
     
     // Landing height
     let landingHeight = Double(piece.y - field.garbageCount + 1)
