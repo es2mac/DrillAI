@@ -6,6 +6,7 @@
 - Update this document
 
 
+
 - Tree implement promote root
     - Tree implement cancelling outstanding evaluations
     
@@ -20,10 +21,30 @@
 
 - Bot can decide whether there's a clear winner yet if there's a move that
   is significantly pulling ahead on visit count
+    - balance between clear winner vs. total count, if results not clear,
+      want to go for longer, but if results are clear, can end sooner
+    - some kind of formula, in the spirit of PUCT?
+    - also a min time & max time for each new step
+        - maybe time is more informative than search counts
+        - use up max time when new best end state is seen?
   
 - Really curious about the duplication issue in the tree: put down 2 pieces in
   different orders should really be the same, and if those are the most promising
   moves they'd uselessly compete with each other and have overlapping subtrees
+    - Turns out it's generally 75~95% unique within each 10k bin
+    - overall though 60%?
+
+- Strange thing is that following the best path often don't get to the absolute
+  best piece count, wonder if I should special-case those
+    - Given enough reps though, it does seem to converge alright
+    - Maybe when a new best is seen, I'd want to have a good amount
+      of runs to solidify it
+  
+- Wonder if PUCT exploration constant should be dynamically adjusted
+    - Set on tree, propagate to all nodes
+    - constant of 2.5 seems about right for BCTSEvaluator, though it still
+      struggles when there's no obviously good choices, and likes to go
+      deep ignoring all others when it sees something
 
 
 ## Old items

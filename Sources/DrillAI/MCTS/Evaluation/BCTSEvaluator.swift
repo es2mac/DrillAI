@@ -8,7 +8,37 @@
 import Foundation
 
 
+struct InternalState: Hashable {
+    let field: Field
+    let hold: Tetromino?
+    let dropCount: Int
+    let garbageCleared: Int
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(field.storage)
+        hasher.combine(field.garbageCount)
+        hasher.combine(hold)
+        hasher.combine(dropCount)
+        hasher.combine(garbageCleared)
+    }
+
+    init(_ gameState: GameState) {
+        self.field = gameState.field
+        self.hold = gameState.hold
+        self.dropCount = gameState.dropCount
+        self.garbageCleared = gameState.garbageCleared
+    }
+}
+
+
 public final class BCTSEvaluator {
+
+    private var count: Int = 0
+    private var lastPrint: Int = 0
+//    private var seenStates: Set<InternalState> = Set()
+//    private var dropCountTally: [Int] = [Int](repeating: 0, count: 60)
+    private var doneStateDepths: [Int: Int] = [:]
+
     public init() {}
 }
 
@@ -20,6 +50,29 @@ public extension BCTSEvaluator {
     typealias Results = MCTSTree<GameState>.EvaluationResults
 
     func evaluate(info: MCTSTree<GameState>.StatesInfo) async -> Results {
+        info.forEach { item in
+//            seenStates.insert(InternalState(item.state))
+//            dropCountTally[item.state.dropCount] += 1
+            if item.state.field.garbageCount == 0 {
+                doneStateDepths[item.state.dropCount, default: 0]  += 1
+            }
+        }
+        count += info.count
+
+        if count - lastPrint >= 10000 {
+//            let ratio = (seenStates.count * 100 / count)
+            print("***********************************")
+            print("BCTSEvaluator states count:")
+            print("    \(count) evaluations")
+//            print("    \(seenStates.count) unique states (\(ratio)%)")
+            print("    done states: \(doneStateDepths.sorted(by: {$0.key < $1.key }))")
+//            print("    tally: \(dropCountTally)")
+            print("***********************************")
+            lastPrint += 10000
+//            count = 0
+//            seenStates.removeAll(keepingCapacity: true)
+        }
+
         return info.map(evaluate)
     }
 }
