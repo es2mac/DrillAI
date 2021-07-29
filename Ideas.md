@@ -45,6 +45,11 @@
     - constant of 2.5 seems about right for BCTSEvaluator, though it still
       struggles when there's no obviously good choices, and likes to go
       deep ignoring all others when it sees something
+      
+- Filter evalutation targets: In actual games we don't have infinite previews,
+  so the depth of search is limited
+    - give filtering closure?
+    - directly specify max search depth?
 
 
 ## Old items

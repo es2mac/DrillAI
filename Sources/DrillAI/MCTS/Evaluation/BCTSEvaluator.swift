@@ -33,11 +33,12 @@ struct InternalState: Hashable {
 
 public final class BCTSEvaluator {
 
-    private var count: Int = 0
-    private var lastPrint: Int = 0
+//    private var count: Int = 0
+//    private var lastPrint: Int = 0
 //    private var seenStates: Set<InternalState> = Set()
 //    private var dropCountTally: [Int] = [Int](repeating: 0, count: 60)
-    private var doneStateDepths: [Int: Int] = [:]
+//    private var valueRecord: [Int] = [Int](repeating: 0, count: 21)
+//    private var doneStateDepths: [Int: Int] = [:]
 
     public init() {}
 }
@@ -50,30 +51,41 @@ public extension BCTSEvaluator {
     typealias Results = MCTSTree<GameState>.EvaluationResults
 
     func evaluate(info: MCTSTree<GameState>.StatesInfo) async -> Results {
-        info.forEach { item in
-//            seenStates.insert(InternalState(item.state))
-//            dropCountTally[item.state.dropCount] += 1
-            if item.state.field.garbageCount == 0 {
-                doneStateDepths[item.state.dropCount, default: 0]  += 1
-            }
-        }
-        count += info.count
-
-        if count - lastPrint >= 10000 {
-//            let ratio = (seenStates.count * 100 / count)
-            print("***********************************")
-            print("BCTSEvaluator states count:")
-            print("    \(count) evaluations")
-//            print("    \(seenStates.count) unique states (\(ratio)%)")
-            print("    done states: \(doneStateDepths.sorted(by: {$0.key < $1.key }))")
-//            print("    tally: \(dropCountTally)")
-            print("***********************************")
-            lastPrint += 10000
-//            count = 0
-//            seenStates.removeAll(keepingCapacity: true)
-        }
+//        info.forEach { item in
+////            seenStates.insert(InternalState(item.state))
+////            dropCountTally[item.state.dropCount] += 1
+//            if item.state.field.garbageCount == 0 {
+//                doneStateDepths[item.state.dropCount, default: 0]  += 1
+//            }
+//        }
+//        count += info.count
+//
+//
+//        let results = info.map(evaluate)
+//        results.forEach { (_, value, _) in
+//            // (-1, 1) -> (0, 20)
+//            let bin = Int((value + 1) * 10)
+//            valueRecord[bin] += 1
+//        }
+//
+//
+//        if count - lastPrint >= 10000 {
+////            let ratio = (seenStates.count * 100 / count)
+//            print("***********************************")
+//            print("BCTSEvaluator states count:")
+//            print("    \(count) evaluations")
+////            print("    \(seenStates.count) unique states (\(ratio)%)")
+//            print("    done states: \(doneStateDepths.sorted(by: {$0.key < $1.key }))")
+////            print("    tally: \(dropCountTally)")
+//            print("    value distribution: \(valueRecord)")
+//            print("***********************************")
+//            lastPrint += 10000
+////            count = 0
+////            seenStates.removeAll(keepingCapacity: true)
+//        }
 
         return info.map(evaluate)
+//        return results
     }
 }
 
@@ -96,14 +108,17 @@ private extension BCTSEvaluator {
         // What if I split the BCTS components, use the field parts for state eval
         // and the action parts for prior?
 
-        // Assume (-4000 ~ 0)
+        // Empirically tested (x/1200 + 1) is somewhat close for (-1, 1)
         let rawFieldValue = evaluateField(field)
-        let fieldValue = (rawFieldValue / 2000) + 1
-        // Assume (0 ~ 0.5)
+        let fieldValue = max(-1, min(1, (rawFieldValue / 1200) + 1))
+
+        // Again empirically tested (x/2.5 - 1.1), but lots of x = 0, needs clamping
         let rawPastValue = Double(state.garbageCleared) / Double(state.dropCount + 1)
-        let pastValue = rawPastValue * 4 - 1
+        let pastValue = max(-1, min(1, (rawPastValue * 2.5 - 1.1)))
+
         // Arbitrary interpolation & clamping
-        let value = max(-1, min(1, (0.7 * fieldValue + 0.3 * pastValue)))
+        let pastWeight = Double(min(state.dropCount, 20)) / 40 // 0 to 0.5
+        let value = (1 - pastWeight) * fieldValue + pastWeight * pastValue
 
         // If the field has no more garbage, give it a boost and don't need priors
         if field.garbageCount == 0 {
