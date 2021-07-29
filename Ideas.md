@@ -52,6 +52,21 @@
     - directly specify max search depth?
 
 
+## The BCTS bot
+
+- The BCTS bot got to a point that's pretty workable.
+- It's not good in long games where it can't see the end state.
+- It does well for small fields, say 10-line games.  In 10-line games, it'd often
+  have difficulty at the start, then once it catches an end state, it dramatically
+  zooms into it and finds better solutions along the way.  I think this may mean
+  that the values I derived from BCTS is still not diverse enough to provide good
+  signals balancing the exploration factors, and that giving end states a big
+  boost helped.  More tweaking of the evaluation and PUCT might help.
+- But I think ultimately I want to move to the DL solution sooner because it's
+  more interesting, and I like the idea of an evaluation that is more insightful
+  to the specific problem at hand, i.e. drill down fast.
+
+
 ## Old items
 
 - Try in-memory model training
