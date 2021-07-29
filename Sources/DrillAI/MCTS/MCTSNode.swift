@@ -163,7 +163,7 @@ extension MCTSNode {
         switch status {
         case .initial: return nil
         case .expanded: return Int.random(in: 0..<children.count)
-        case .evaluated: return Int(vDSP.indexOfMaximum(actionScores).0)
+        case .evaluated: return experimentalBestActionScoreIndex()
         }
     }
 
@@ -180,6 +180,34 @@ extension MCTSNode {
         children[index] = childNode
         return childNode
     }
+
+    /// By informal testing, this is 2.5x speedup from doing
+    /// ```Int(vDSP.indexOfMaximum(actionScores).0)```
+    /// The logic is the same, just avoiding array allocations.
+    /// Keeping the actionScore & dependent values code as documentation.
+    private func experimentalBestActionScoreIndex() -> Int {
+        // Scalar values
+        let totalN = max(1, vDSP.sum(childN) - 1)
+        let puctConstant = 2.5
+        let C = 1.25 + log((1 + totalN + 19652.0) / 19652.0)
+        let scalars = puctConstant * C * sqrt(totalN)
+
+        // Mean action values
+        var result = vDSP.add(1, childN)                        // 1 + N
+        vDSP.divide(1, result, result: &result)                 // 1 / (1 + N)
+
+        let meanActionValues = vDSP.multiply(childW, result)    // W / (1 + N)
+
+        // PUCT values
+        vDSP.multiply(priors, result, result: &result)          // priors / (1 + N)
+        vDSP.multiply(scalars, result, result: &result)         // scalars * priors / (1 + N)
+
+        // Mean action values + PUCT values = action score
+        vDSP.add(meanActionValues, result, result: &result)
+
+        return Int(vDSP.indexOfMaximum(result).0)
+    }
+
 
     /// The PUCT action scores of all children, i.e. sum of the exploitation scores
     /// (Q) and exploration scores (U).
