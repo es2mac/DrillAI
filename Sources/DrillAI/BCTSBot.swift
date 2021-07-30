@@ -1,5 +1,5 @@
 //
-//  DrillBot.swift
+//  BCTSBot.swift
 //
 //
 //  Created by Paul on 7/28/21.
@@ -8,17 +8,16 @@
 import Foundation
 
 
-public final class DrillBot<Evaluator: MCTSEvaluator> where Evaluator.State == GameState {
+public final class BCTSBot {
     public typealias State = GameState
     public typealias Action = Piece
     public typealias ActionVisits = MCTSTree<State>.ActionVisits
 
     private let tree: MCTSTree<State>
-    private let evaluator: Evaluator
+    private let evaluator: BCTSEvaluator = .init()
 
-    public init(initialState: State, evaluator: Evaluator) {
+    public init(initialState: State) {
         self.tree = MCTSTree(initialState: initialState)
-        self.evaluator = evaluator
     }
 
     public func makeAMove() async -> Action? {
