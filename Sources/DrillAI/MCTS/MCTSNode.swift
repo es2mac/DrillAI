@@ -163,7 +163,7 @@ extension MCTSNode {
         switch status {
         case .initial: return nil
         case .expanded: return Int.random(in: 0..<children.count)
-        case .evaluated: return experimentalBestActionScoreIndex()
+        case .evaluated: return getBestActionValuedChildIndex()
         }
     }
 
@@ -185,7 +185,7 @@ extension MCTSNode {
     /// ```Int(vDSP.indexOfMaximum(actionScores).0)```
     /// The logic is the same, just avoiding array allocations.
     /// Keeping the actionScore & dependent values code as documentation.
-    private func experimentalBestActionScoreIndex() -> Int {
+    private func getBestActionValuedChildIndex() -> Int {
         // Scalar values
         let totalN = max(1, vDSP.sum(childN) - 1)
         let puctConstant = 2.5
