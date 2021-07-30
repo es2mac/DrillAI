@@ -118,7 +118,7 @@ final class MCTSTreeTests: XCTestCase {
         XCTAssertEqual(info.count, 4)
 
         let orderedActions = await tree.getOrderedRootActions()
-        XCTAssertEqual(orderedActions.map(\.1), [1.0, 1.0, 1.0])
+        XCTAssertEqual(orderedActions.map(\.visits), [1, 1, 1])
 
         // Set evaluations for all 4 nodes and we should none outstanding
         let results: MCTSTree.EvaluationResults = info.map { item in
@@ -131,7 +131,7 @@ final class MCTSTreeTests: XCTestCase {
 
         // ...and the visit counts should still be the same
         let updatedActions = await tree.getOrderedRootActions()
-        XCTAssertEqual(updatedActions.map(\.1), [1.0, 1.0, 1.0])
+        XCTAssertEqual(updatedActions.map(\.visits), [1, 1, 1])
 
         // Now if we continue doing searches, all the nodes are evaluated,
         // so those will actually count as visits, but propagate with the
@@ -139,6 +139,6 @@ final class MCTSTreeTests: XCTestCase {
         let info2 = await tree.getNextUnevaluatedStates(targetCount: 32)
         XCTAssertEqual(info2.count, 0)
         let finalActions = await tree.getOrderedRootActions()
-        XCTAssertGreaterThanOrEqual(finalActions.map(\.1).reduce(0, +), 32)
+        XCTAssertGreaterThanOrEqual(finalActions.map(\.visits).reduce(0, +), 32)
     }
 }
