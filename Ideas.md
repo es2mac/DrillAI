@@ -7,17 +7,11 @@
 
 
 
-- Tree implement promote root
-    - Tree implement cancelling outstanding evaluations
-    
-- For BCTS, suspecting that the line clears are weighted too heavily
-    - How do I display a reasonable view of the tree to see what's going on?
-    - Feels like sometimes it gets obsessed with a second-step good result
-      and that beats a first-step good result, but it shouldn't have seen
-      a terminal state yet, strange
-
-- Bot report full report on moves
-    - Maybe more info on the evals, puct, tree depth
+- Improve BCTS eval
+    - Improvement to value: factor in garbages left, nonlinearly?
+    - less garbages left: maybe better value + weighed more in the weighted sum
+    - btw, rename to BCTSBot?
+    - Maybe dynamic PUCT
 
 - Bot can decide whether there's a clear winner yet if there's a move that
   is significantly pulling ahead on visit count
@@ -50,6 +44,8 @@
   so the depth of search is limited
     - give filtering closure?
     - directly specify max search depth?
+    
+- More concrete types for where I'm using tuples to pass information around
 
 
 ## The BCTS bot

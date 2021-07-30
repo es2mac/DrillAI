@@ -82,6 +82,10 @@ public extension GameState {
 
 
 extension GameState {
+    var remainingGarbageCount: Int {
+        environment.garbages.count - garbageCleared
+    }
+
     var playPiece: Tetromino {
         hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
     }

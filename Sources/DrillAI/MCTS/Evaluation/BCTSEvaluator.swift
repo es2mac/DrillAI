@@ -8,36 +8,44 @@
 import Foundation
 
 
-struct InternalState: Hashable {
-    let field: Field
-    let hold: Tetromino?
-    let dropCount: Int
-    let garbageCleared: Int
+//struct InternalState: Hashable {
+//    let field: Field
+//    let hold: Tetromino?
+//    let dropCount: Int
+//    let garbageCleared: Int
+//
+//    func hash(into hasher: inout Hasher) {
+//        hasher.combine(field.storage)
+//        hasher.combine(field.garbageCount)
+//        hasher.combine(hold)
+//        hasher.combine(dropCount)
+//        hasher.combine(garbageCleared)
+//    }
+//
+//    init(_ gameState: GameState) {
+//        self.field = gameState.field
+//        self.hold = gameState.hold
+//        self.dropCount = gameState.dropCount
+//        self.garbageCleared = gameState.garbageCleared
+//    }
+//}
 
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(field.storage)
-        hasher.combine(field.garbageCount)
-        hasher.combine(hold)
-        hasher.combine(dropCount)
-        hasher.combine(garbageCleared)
-    }
 
-    init(_ gameState: GameState) {
-        self.field = gameState.field
-        self.hold = gameState.hold
-        self.dropCount = gameState.dropCount
-        self.garbageCleared = gameState.garbageCleared
-    }
-}
-
-
+/// The BCTS evaluator uses the BCTS value (Building Controllers for Tetris,
+/// Thiery & Scherrer) adjusted for digging.  In the features used for BCTS,
+/// a couple are just about the field, and others are about what happened when
+/// the piece was placed.  This is fine for comparing among all possible next
+/// placements, but MCTS has a slightly different formulation, where each state
+/// has a value that doesn't need to depend on the history, and a prior that
+/// asks which moves are more promising.  I split BCTS up into those two parts
+/// to provide a value & prior.
 public final class BCTSEvaluator {
 
 //    private var count: Int = 0
 //    private var lastPrint: Int = 0
+//    private var valueRecord: [Int] = [Int](repeating: 0, count: 21)
 //    private var seenStates: Set<InternalState> = Set()
 //    private var dropCountTally: [Int] = [Int](repeating: 0, count: 60)
-//    private var valueRecord: [Int] = [Int](repeating: 0, count: 21)
 //    private var doneStateDepths: [Int: Int] = [:]
 
     public init() {}
@@ -50,7 +58,9 @@ public extension BCTSEvaluator {
     typealias Info = MCTSTree<GameState>.StatesInfo
     typealias Results = MCTSTree<GameState>.EvaluationResults
 
-    func evaluate(info: MCTSTree<GameState>.StatesInfo) async -> Results {
+    func evaluate(info: Info) async -> Results {
+        return info.map(evaluate)
+
 //        info.forEach { item in
 ////            seenStates.insert(InternalState(item.state))
 ////            dropCountTally[item.state.dropCount] += 1
@@ -60,31 +70,27 @@ public extension BCTSEvaluator {
 //        }
 //        count += info.count
 //
-//
 //        let results = info.map(evaluate)
 //        results.forEach { (_, value, _) in
 //            // (-1, 1) -> (0, 20)
 //            let bin = Int((value + 1) * 10)
 //            valueRecord[bin] += 1
 //        }
-//
-//
+////
+////
 //        if count - lastPrint >= 10000 {
 ////            let ratio = (seenStates.count * 100 / count)
 //            print("***********************************")
 //            print("BCTSEvaluator states count:")
 //            print("    \(count) evaluations")
 ////            print("    \(seenStates.count) unique states (\(ratio)%)")
-//            print("    done states: \(doneStateDepths.sorted(by: {$0.key < $1.key }))")
+////            print("    done states: \(doneStateDepths.sorted(by: {$0.key < $1.key }))")
 ////            print("    tally: \(dropCountTally)")
 //            print("    value distribution: \(valueRecord)")
 //            print("***********************************")
 //            lastPrint += 10000
-////            count = 0
 ////            seenStates.removeAll(keepingCapacity: true)
 //        }
-
-        return info.map(evaluate)
 //        return results
     }
 }
@@ -97,34 +103,42 @@ private extension BCTSEvaluator {
         let (id, state, nextActions) = entry
         let field = state.field
 
-        // How to use BCTS for a good evaluation is still TBD, can factor in
-        // how many pieces are placed so far vs. how many garbages cleared so far,
-        // while BCTS, like neural network, gives an assessment of the current
-        // field as it is.  Although, BCTS does take a little bit of history into
-        // account, that is, it evaluates the action itself as well as the
-        // resulting field.
+        // Custom value heuristics.
+        // BCTS should have a sense of how close we are to done, but more
+        // importantly, a sense of how flat the field is.
+        // Then we want to incorporate additional information about the progress
+        // towards the end of the game.  The most natural is probably just to use
+        // % cleared garbage lines... but I want this to be consistent for e.g.
+        // 10-line games and 100-line games.  So instead I'll see
+        // - How efficient we've been clearing
+        // - How much further to go
 
-        // Also, we might also think of a reasonable heuristic for priors.
-        // What if I split the BCTS components, use the field parts for state eval
-        // and the action parts for prior?
-
-        // Empirically tested (x/1200 + 1) is somewhat close for (-1, 1)
+        // Field value, normalized to (-1, 1)
+        // Empirically tested (x/1200 + 1) is somewhat close to (-1, 1)
         let rawFieldValue = evaluateField(field)
         let fieldValue = max(-1, min(1, (rawFieldValue / 1200) + 1))
 
-        // Again empirically tested (x/2.5 - 1.1), but lots of x = 0, needs clamping
+        // Past efficiency, normalized to (-1, 1)
+        // Ratio should be generally between 0.1 ~ 0.7, but values could be 0 or 1 at
+        // the beginning few steps of the game, then stabilize.
         let rawPastValue = Double(state.garbageCleared) / Double(state.dropCount + 1)
-        let pastValue = max(-1, min(1, (rawPastValue * 2.5 - 1.1)))
+        let pastValue = max(-1, min(1, (rawPastValue * 3 - 1.1)))
 
-        // Arbitrary interpolation & clamping
-        let pastWeight = Double(min(state.dropCount, 20)) / 40 // 0 to 0.5
-        let value = (1 - pastWeight) * fieldValue + pastWeight * pastValue
+        // Near-finish bonus, nonlinear in the range (0, 1)
+        let bonus = 1.0 / Double(state.remainingGarbageCount + 1)
 
-        // If the field has no more garbage, give it a boost and don't need priors
-        if field.garbageCount == 0 {
-            return (id: id, value: (0.5 + 0.5 * value), priors: nil)
-        }
 
+        // Weight the average of 3 values.  They all get 1/3, but the past needs
+        // a lower weight with fewer pieces because it could varies wildly.
+        let pastWeight = Double(min(state.dropCount, 20)) / 60
+        let bonusWeight = 1.0 / 3
+        let fieldWeight = 1.0 - pastWeight - bonusWeight
+
+        let value = fieldValue * fieldWeight +
+                     pastValue *  pastWeight +
+                         bonus * bonusWeight
+
+        // Calculate priors
         // Assume evaluateMove in (-150 ~ 50)
         let rawPriors = nextActions.map { piece in
             evaluateMove(field: field, piece: piece) + 500
@@ -262,7 +276,6 @@ func calculateBCTSValue(field: Field, piece: Piece, parentField: Field) -> Doubl
 
 
 /// The part of BCTS that only concerns the current field.
-/// TBD:  How to normalize to between -1 and 1.
 private func evaluateField(_ field: Field) -> Double {
     let lines = field.storage
 
