@@ -46,13 +46,8 @@ extension MCTSTree {
         virtualLosses.count
     }
 
-    func cancelOutstandingEvaluations() {
-        fatalError("Not implemented")
-    }
-
     func promoteRoot(action: Action) -> State where Action: Equatable {
-        // Note: this can happen pretty easily, maybe I'll do cancel here?
-        assert(virtualLosses.count == 0)
+        cancelOutstandingEvaluations()
 
         if let index = root.nextActions.index(of: action),
            let child = root.children[index] {
@@ -193,6 +188,16 @@ private extension MCTSTree {
         let index = node.indexInParent
         let value = parent.childW[index] / parent.childN[index]
         backPropagate(from: node, value: value, visits: 1)
+    }
+
+    /// Revert virtual losses, forget about evaluations that haven't come back
+    /// so that we can move the root down and start searching again.
+    func cancelOutstandingEvaluations() {
+        while let (_, entry) = virtualLosses.popFirst() {
+            backPropagate(from: entry.0,
+                          value: -entry.1,
+                          visits: 0)
+        }
     }
 
     /// Propagate the evaluated value from the leaf node back up the tree.  Every node
