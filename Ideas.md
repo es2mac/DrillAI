@@ -31,6 +31,8 @@
   predict what it's gonna do and what kind of bad moves it tend to play.
 - One more issue with the BCTS bot right now, is that it has too much information
   about the future.  It's not playing fair to humans who only has 5 preview pieces.
+- Important note here is that I haven't shown that BCTS can't work, afterall, I've
+  tweaked it and not done any reinforcement training on the borrowed coefficients
 
 Other misc notes
   
