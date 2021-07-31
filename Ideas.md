@@ -1,13 +1,15 @@
 
 ## Possible next steps
 
+- Detached tasks unstructured concurrency with bot play
+
+- Command-line program to play through 100-line games
+    - Then start collecting data
+
 - Document GameState
 - Document DigEnvironment
 
 - More concrete types for where I'm using tuples to pass information around
-
-- Command-line program to play through 100-line games
-    - Then start collecting data
 
 
 ## The BCTS bot
