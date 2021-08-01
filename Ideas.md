@@ -86,6 +86,49 @@ Other misc notes
       faster than the vDSP calls.)
 
 
+## Coordinating two async tasks
+
+- In trying to coordinate between the tree and evaluator, I went through all
+  of the new async/await categories.
+- Sequentially with await was simple enough, though did not try cancel mechanism.
+- Tried using async let, but is somehow still an experimental feature.
+- Creating task groups using withTaskGroup doesn't work well with what I want,
+  and actually hit a memory leak issue.
+- Finally, with unstructured concurrency, keeping reference to two tasks, and
+  the main loop being just an infinite while loop, it actually worked quite well.
+
+
+## Large tree deallocation
+
+- Ran into deallocation performance issues with large trees, when I advance to
+  a child node.  Surprisingly, it can hold up the MCTSTree quite a bit, halting
+  for noticeable seconds (or even tens of seconds).
+- Through educated guess and later instrument profiling, I did find that dealloc
+  was the problem.
+- First attempt to ameliorate the issue was to have a "trash can" that releases
+  2x the amount of nodes that I create.  This requires disassociating the child
+  node that I advance to, otherwise it'd unnecessarily do the releasing for the
+  active tree.  I put the old root in, and process each node in the bin by
+  unwrapping & adding all the non-nil children to the bin.  This does solve the
+  problem, but with noticeable performance hit.
+- Second attempt was to try throw the deinit sequence to a low-priority background
+  queue.  And it works!  Although the memory seems to come down very slowly,
+  or not coming down while the new tree is still growing, which I presume is
+  partly because of the low priority.  But the performance is great, and the
+  memory does eventually get released.
+    - Turns out bumping up priority to utility and release is just fine.
+    ```
+    TaskPriority raw values:
+    9  background
+    17 low
+    17 utility
+    21 medium (default)
+    25 high
+    25 userInitiated
+    ```
+
+
+
 ## Old items
 
 - Training with data augmentation: horizontal flip (though this could be problematic, because SRS rotation system isn't completely symmetric) (update: it is symmetric for all but the I piece), and raising / lowering field garbages

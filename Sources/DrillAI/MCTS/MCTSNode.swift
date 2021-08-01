@@ -276,10 +276,3 @@ extension MCTSNode: CustomDebugStringConvertible {
 
 extension MCTSNode: Identifiable {}
 
-
-extension MCTSNode {
-    func disassociateChild(index: Int) {
-        children[index] = nil
-    }
-}
-

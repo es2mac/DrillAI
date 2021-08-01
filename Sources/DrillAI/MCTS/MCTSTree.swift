@@ -14,7 +14,6 @@ public actor MCTSTree<State: MCTSState> {
 
     private var root: Node
     private var virtualLosses: [ObjectIdentifier : (Node, Double)] = [:]
-    private var nodeTrashCan: [Node] = []
 
     public init(initialState: State) {
         root = Node(state: initialState)
@@ -52,8 +51,9 @@ extension MCTSTree {
 
         if let index = root.nextActions.index(of: action),
            let child = root.children[index] {
-            nodeTrashCan.append(root)
-            root.disassociateChild(index: index)
+            // Hackery to move large tree deallocation to the background
+            let oldRoot = root
+            Task.detached(priority: .utility) { _ = oldRoot }
             root = child
         } else {
             assertionFailure("Not a valid next action")
@@ -125,18 +125,6 @@ private extension MCTSTree {
     /// out here, it will not be sent out again until the evaluation result comes back
     /// and reverts the virtual loss.
     func getNextUnevaluatedNodes(targetCount: Int) -> [Node] {
-        // Do "manual slow deallocation" for unused nodes, to avoid sudden halt when
-        // shredding a large tree.
-        if nodeTrashCan.count > 0 {
-            Task {
-                let discardedNodes: [Node] = nodeTrashCan.suffix(targetCount * 2)
-                nodeTrashCan.removeLast(discardedNodes.count)
-                for discardedNode in discardedNodes {
-                    nodeTrashCan.append(contentsOf: discardedNode.children.flatMap { $0 })
-                }
-            }
-        }
-
         var nodes = [Node]()
 
         let maxAttemptCount = 10 + 2 * targetCount
