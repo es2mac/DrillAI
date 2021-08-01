@@ -1,18 +1,27 @@
 
 ## Possible next steps
 
-- Detached tasks unstructured concurrency with bot play
 
-- Command-line program to play through 100-line games
-    - Then start collecting data
+- Start better UI
+
+- Fix timer start / cancellation
+    - https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
 
 - Document GameState
 - Document DigEnvironment
 
 - More concrete types for where I'm using tuples to pass information around
 
+- "Merge equivalent children" idea
+    - Check popular nodes 2-step away from root and merge equivalent ones
+    - What to do with the counts is an issue
 
-## The BCTS bot
+- Command-line program to play through 100-line games
+    - Then start collecting data
+    - Problem:  Can't run under macOS 11...
+
+
+## The BCTS bot notes
 
 - The BCTS bot got to a point that's pretty workable.
 - It's not good in long games where it can't see the end state.  In a 100-line
@@ -35,6 +44,8 @@
   about the future.  It's not playing fair to humans who only has 5 preview pieces.
 - Important note here is that I haven't shown that BCTS can't work, afterall, I've
   tweaked it and not done any reinforcement training on the borrowed coefficients
+- From the human perspective, it's really not taking the avoidance of covering the
+  next two holes seriously enough.
 
 Other misc notes
   
