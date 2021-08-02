@@ -86,17 +86,6 @@ public extension MCTSTree {
         }
     }
 
-    /// Same as `getNextUnevaluatedStates` but including the parent's state, and the
-    /// action taken to get from the parent state to this state.
-    func getNextUnevaluatedStatesWithExtendedInfo(targetCount: Int = 1) -> ExtendedStatesInfo {
-        let nodes = getNextUnevaluatedNodes(targetCount: targetCount)
-        return nodes.map { node in
-            (id: node.id, state: node.state, nextActions: node.nextActions,
-             lastState: node.parent?.state,
-             lastAction: node.parent?.nextActions[node.indexInParent])
-        }
-    }
-
     /// Update the tree with evaluation results.  Each result should be associated with
     /// a state that was gotten via the "get next unevaluated state" methods.
     /// Conversely, each state that went out from there is expected to come back with

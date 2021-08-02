@@ -9,6 +9,8 @@
 - Figure out architecture: where to place bots, if not as @State?
     - Bug: if gbot is replaced (new game) when it's still thinking,
       it doesn't stop thinking and deallocation probably not called
+    - Might want a view model / interactor object, that is an observable
+      object, interfacing with bot (which is a model/service?)
 
 - Fix timer start / cancellation
     - https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
