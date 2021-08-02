@@ -67,10 +67,6 @@ public extension MCTSTree {
     typealias StatesInfo = [
         (id: ObjectIdentifier, state: State, nextActions: [Action])
     ]
-    typealias ExtendedStatesInfo = [
-        (id: ObjectIdentifier, state: State, nextActions: [Action],
-         lastState: State?, lastAction: Action?)
-    ]
     typealias EvaluationResults = [
         (id: ObjectIdentifier, value: Double, priors: [Double]?)
     ]
