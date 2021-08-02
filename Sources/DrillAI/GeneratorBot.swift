@@ -29,6 +29,8 @@ public final class GeneratorBot<Evaluator: MCTSEvaluator> where Evaluator.State 
         self.tree = MCTSTree(initialState: initialState)
         self.evaluator = evaluator
     }
+
+    deinit { stopThinking() }
 }
 
 
@@ -60,7 +62,6 @@ public extension GeneratorBot {
     }
 }
 
-
 private extension GeneratorBot {
     func coordinateThinking() async {
         while !Task.isCancelled {
@@ -72,10 +73,11 @@ private extension GeneratorBot {
             case (.some(let treeTask), nil):
                 // Evaluator is idle, tree working or maybe done waiting with stuff to evaluate
                 let info = await treeTask.value
-                if !Task.isCancelled {
-                    addEvaluatorTask(info: info)
-                }
                 self.treeTask = nil
+                guard !Task.isCancelled, info.count > 0 else {
+                    return
+                }
+                addEvaluatorTask(info: info)
 
             case (.some(_), .some(let evaluatorTask)):
                 // Both working away, need the evaluator checked off first to offload tree results

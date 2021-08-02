@@ -1,8 +1,12 @@
 
 ## Possible next steps
 
+- Inspect the tree-release still being somewhat slow
+    - node releasing might need a still higher priority
 
 - Start better UI
+
+- Figure out architecture: where to place bots, if not as @State?
 
 - Fix timer start / cancellation
     - https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
