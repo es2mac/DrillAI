@@ -53,7 +53,7 @@ extension MCTSTree {
            let child = root.children[index] {
             // Hackery to move large tree deallocation to the background
             let oldRoot = root
-            Task.detached(priority: .utility) { _ = oldRoot }
+            Task.detached(priority: .medium) { _ = oldRoot }
             root = child
         } else {
             assertionFailure("Not a valid next action")
