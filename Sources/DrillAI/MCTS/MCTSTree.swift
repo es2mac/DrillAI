@@ -79,6 +79,8 @@ public extension MCTSTree {
     /// returned from here has an ID, and expects the evaluation result for the state
     /// to return with that ID.  In the tree, the node corresponding to the state would
     /// have a virtual loss recorded, which is reverted once the results come back.
+    /// The tree will try to find as many as `targetCount` nodes, but it might not
+    /// find that many.
     func getNextUnevaluatedStates(targetCount: Int = 1) -> StatesInfo {
         let nodes = getNextUnevaluatedNodes(targetCount: targetCount)
         return nodes.map { node in
