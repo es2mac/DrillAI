@@ -3,10 +3,12 @@
 
 - Inspect the tree-release still being somewhat slow
     - node releasing might need a still higher priority
-
+    
 - Start better UI
 
 - Figure out architecture: where to place bots, if not as @State?
+    - Bug: if gbot is replaced (new game) when it's still thinking,
+      it doesn't stop thinking and deallocation probably not called
 
 - Fix timer start / cancellation
     - https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
