@@ -63,6 +63,11 @@ public extension GameState {
         hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
     }
 
+    var nextPieceTypes: [Tetromino] {
+        let startIndex = hold == nil ? dropCount + 1 : dropCount + 2
+        return (startIndex ..< startIndex + 5).map { environment.pieces[$0] }
+    }
+
     func getLegalActions() -> [Piece] {
         if field.garbageCount == 0 {
             return []

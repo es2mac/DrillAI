@@ -1,16 +1,23 @@
 
 ## Possible next steps
 
-- Start better UI
+- Draw play piece
+    - How to position piece on the field
+    
+- Draw ghost piece
+    
+- My fancy-looking generator bot doesn't actually make things run on separate
+  threads / concurrently
+    - Printing out the thread in the actual work functions show this
+    - Why was it previously showing ~140% CPU usage before?
+    
+- Keep thinking about architecture
 
-- Figure out architecture: where to place bots, if not as @State?
-    - Bug: if gbot is replaced (new game) when it's still thinking,
-      it doesn't stop thinking and deallocation probably not called
-    - Might want a view model / interactor object, that is an observable
-      object, interfacing with bot (which is a model/service?)
+- Animate placing piece
 
-- Fix timer start / cancellation
-    - https://www.hackingwithswift.com/books/ios-swiftui/triggering-events-repeatedly-using-a-timer
+- Maybe put field in a drawingGroup
+
+- Maybe use MainActor for the view model update
 
 - Document GameState
 - Document DigEnvironment
@@ -24,6 +31,12 @@
 - Command-line program to play through 100-line games
     - Then start collecting data
     - Problem:  Can't run under macOS 11...
+    
+- A way to control... so one can manually play?
+    - On mac handling keyboard:
+        https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
+    - On iOS, seems to need to custom-class the UIHostingController
+    - On-screen control is the more orthodox option for iOS
 
 
 ## The BCTS bot notes
