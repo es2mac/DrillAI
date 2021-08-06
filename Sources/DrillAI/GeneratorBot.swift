@@ -35,6 +35,14 @@ public final class GeneratorBot<Evaluator: MCTSEvaluator> where Evaluator.State 
 
 
 public extension GeneratorBot {
+    var isThinking: Bool {
+        if let task = thinkingTask, !task.isCancelled {
+            return true
+        } else {
+            return false
+        }
+    }
+
     func startThinking() {
         guard thinkingTask == nil else { return }
         thinkingTask = Task {
@@ -74,7 +82,11 @@ private extension GeneratorBot {
                 // Evaluator is idle, tree working or maybe done waiting with stuff to evaluate
                 let info = await treeTask.value
                 self.treeTask = nil
-                guard !Task.isCancelled, info.count > 0 else {
+                guard info.count > 0 else {
+                    self.stopThinking()
+                    return
+                }
+                guard !Task.isCancelled else {
                     return
                 }
                 addEvaluatorTask(info: info)

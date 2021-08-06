@@ -59,6 +59,10 @@ extension GameState: MCTSState {}
 public extension GameState {
     typealias Action = Piece
 
+    var playPiece: Tetromino {
+        hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
+    }
+
     func getLegalActions() -> [Piece] {
         if field.garbageCount == 0 {
             return []
@@ -84,10 +88,6 @@ public extension GameState {
 extension GameState {
     var remainingGarbageCount: Int {
         environment.garbages.count - garbageCleared
-    }
-
-    var playPiece: Tetromino {
-        hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
     }
 
     private var playablePieces: [Tetromino] {

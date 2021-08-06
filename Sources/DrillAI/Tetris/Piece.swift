@@ -21,6 +21,13 @@ public struct Piece {
     public var x: Int
     public var y: Int
     public var orientation: Orientation = .up
+
+    public init(type: Tetromino, x: Int, y: Int, orientation: Orientation) {
+        self.type = type
+        self.x = x
+        self.y = y
+        self.orientation = orientation
+    }
 }
 
 
