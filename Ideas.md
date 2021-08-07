@@ -3,11 +3,17 @@
 
 - General intermediate goal: Press a key and the bot plays till the end, all animated.
 
-- Draw play piece
-    - How to position piece on the field (as a step toward animating bot move)
-    
 - Draw ghost piece
     - Calculate ghost position on field
+    
+- Notify bot stopped
+    - At least update latest available best moves
+    - Some property to check this
+    - Maybe a closure callback?
+    - This ties into logic for automatically playing through to the end
+
+- Animate placing piece
+    - Generate the move sequence from spawn to final position
     
 - My fancy-looking generator bot doesn't actually make things run on separate
   threads / concurrently
@@ -17,12 +23,10 @@
     
 - Keep thinking about architecture
 
-- Animate placing piece
-    - Generate the move sequence from spawn to final position
-
 - Maybe put field in a drawingGroup
 
 - Maybe use MainActor for the view model update
+    - The update logic might be improved
 
 - Document GameState
 - Document DigEnvironment

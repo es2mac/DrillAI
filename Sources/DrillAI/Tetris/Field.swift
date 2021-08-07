@@ -33,14 +33,44 @@ public struct Field {
 }
 
 
-extension Field {
+public extension Field {
+    /// Check if a piece can be placed on the field.
+    /// Not useful for AI applications as there are more efficient ways to do it
+    /// when we perform a large number of checks during search, such as below.
+    func canPlace(_ piece: Piece) -> Bool {
+        let index = piece.bitmaskIndex
+        let boundOffsets = pieceBoundOffsets[index]
+        let pieceLeft = piece.x - boundOffsets.left
+        let pieceRight = piece.x + boundOffsets.right
+        let pieceBottom = piece.y - boundOffsets.bottom
+        let pieceTop = piece.y + boundOffsets.top
+
+        guard pieceLeft >= 0, pieceRight < 10, pieceBottom >= 0 else { return false }
+
+        // Only need to check for obstruction in rows that
+        // the storage & the piece have in common
+        if pieceBottom >= storage.count { return true }
+
+        let pieceMask = wholePieceBitmasks[index] << pieceLeft
+        let topRow = min(pieceTop, storage.count - 1)
+
+        let fieldLines = storage[pieceBottom...topRow].reversed().reduce(0) { (total, line) -> Int in
+            (total << 10) | Int(line)
+        }
+
+        return (pieceMask & fieldLines) == 0
+    }
+}
+
+
+public extension Field {
     /// Place (lock down) a piece.
     /// Returns a copy of the field with a piece placed in, and lines cleared.
     /// "Paste" the piece right onto the field, does not check if it's legal.
     /// However, it is assumed that e.g. if the piece spans rows 7~9, then
     /// the field must already have at least 6 rows.  This would be true if
     /// the piece locked legally.
-    public func lockDown(_ piece: Piece) -> (newField: Field, garbageCleared: Int) {
+    func lockDown(_ piece: Piece) -> (newField: Field, garbageCleared: Int) {
         let index = piece.bitmaskIndex
         let boundOffsets = pieceBoundOffsets[index]
         let pieceLeft = piece.x - boundOffsets.left
@@ -79,33 +109,6 @@ extension Field {
         return (newField: newField, garbageCleared: garbageCleared)
     }
 
-    /// Check if a piece can be placed on the field.
-    /// Not useful for AI applications as there are more efficient ways to do it
-    /// when we perform a large number of checks during search, such as below.
-    public func canPlace(_ piece: Piece) -> Bool {
-        let index = piece.bitmaskIndex
-        let boundOffsets = pieceBoundOffsets[index]
-        let pieceLeft = piece.x - boundOffsets.left
-        let pieceRight = piece.x + boundOffsets.right
-        let pieceBottom = piece.y - boundOffsets.bottom
-        let pieceTop = piece.y + boundOffsets.top
-
-        guard pieceLeft >= 0, pieceRight < 10, pieceBottom >= 0 else { return false }
-
-        // Only need to check for obstruction in rows that
-        // the storage & the piece have in common
-        if pieceBottom >= storage.count { return true }
-
-        let pieceMask = wholePieceBitmasks[index] << pieceLeft
-        let topRow = min(pieceTop, storage.count - 1)
-
-        let fieldLines = storage[pieceBottom...topRow].reversed().reduce(0) { (total, line) -> Int in
-            (total << 10) | Int(line)
-        }
-
-        return (pieceMask & fieldLines) == 0
-    }
-
     /// Find all possible simple (hard-dropped from top) placements of tetrominos.
     ///
     /// Simple placements are those reached by shifting & rotating first
@@ -114,7 +117,7 @@ extension Field {
     ///
     /// In the future, we want to find all possible placements (including slides and spins).
     /// For that we need to implement spin rules, graph search all placements, and eliminate isomorphic results.
-    public func findAllSimplePlacements(for types: [Tetromino]) -> [Piece] {
+    func findAllSimplePlacements(for types: [Tetromino]) -> [Piece] {
         let lineMasks = makeMultiLineMasks()
         // Find all the starting positions (x & orientation) for all the pieces
         // (1 or 2, i.e. play & hold), before figuring out how far it can drop.
@@ -138,10 +141,13 @@ extension Field {
         }
         return pieces
     }
+}
 
+
+private extension Field {
     /// "Stack up" the lines so that each mask can be used to check
     /// the placement of a piece with a single operation.
-    private func makeMultiLineMasks() -> [Int] {
+    func makeMultiLineMasks() -> [Int] {
         guard storage.count > 0 else { return [] }
         var masks = storage.map(Int.init)
 
