@@ -60,6 +60,18 @@ public extension Field {
 
         return (pieceMask & fieldLines) == 0
     }
+
+    func makeGhost(of piece: Piece) -> Piece {
+        var ghostPiece = piece
+
+        ghostPiece.y -= 1
+        while canPlace(ghostPiece) {
+            ghostPiece.y -= 1
+        }
+        ghostPiece.y += 1
+
+        return ghostPiece
+    }
 }
 
 
