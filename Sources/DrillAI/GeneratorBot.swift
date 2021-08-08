@@ -17,6 +17,8 @@ public final class GeneratorBot<Evaluator: MCTSEvaluator> where Evaluator.State 
     public typealias ActionVisits = MCTSTree<State>.ActionVisits
     typealias EvaluationInfo = [(id: ObjectIdentifier, state: GameState, nextActions: [Action])]
 
+    public var autoStopAction: (() -> Void)?
+
     private let tree: MCTSTree<State>
     private let evaluator: Evaluator
 
@@ -83,7 +85,8 @@ private extension GeneratorBot {
                 let info = await treeTask.value
                 self.treeTask = nil
                 guard info.count > 0 else {
-                    self.stopThinking()
+                    stopThinking()
+                    autoStopAction?()
                     return
                 }
                 guard !Task.isCancelled else {

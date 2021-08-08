@@ -1,25 +1,64 @@
 
 ## Possible next steps
 
-- General intermediate goal: Press a key and the bot plays till the end, all animated.
 
-- Draw ghost piece
-    - Calculate ghost position on field
+- Bug: start new game in the middle of auto play might crash
+    - If it doesn't crash, it seems to have hidden bots playing in background
+
+- There seems to be a subtle bug of timer that's still running through end of game
+    - or more specifically, if the game is done, and bot play is clicked again, then
+      click new game, the moves list would be updated to be empty, but I can still
+      click bot play to start playing correctly
+    - I think the callback is still called, but there might be a race condition that
+      causes it to not cancel the timer correctly?  Maybe the stop should be checked
+      more aggressively, at every timer tick?
+
+- Animation
+    - Animate row clear
+    - Animate garbage rise
+    - Animate placing piece
+        - Generate the move sequence from spawn to final position
+        
+- What can be animated?
+    - Left/right move always instantaneous
+    - Hard drop: maybe a fake one, where it's actually instantaneous but a blur flashes through?
+        - Tetris Effect does a weighted springy motion
+    - Line clear: 
+        - When the piece drop, there could be an "explosion" or flash sequence,
+          or immediately disappear leaving emptiness
+            - Can do a flash only for clearing garbage lines
+        - Then the higher lines fall down
+    - Garbage rise:
+        - It could rise slowly (linearly?) depending on how much more to rise
+   
+- Animation plan:
+    - Stage 0: weighted piece fall
+        - Animate whole field (including grid lines and ghost, but not play piece?)
+        - I might need a flag in DisplayField to indicate whether a piece dropped, so I can bounce
+        - One possible way to do this, though hopefully can find something easier: keep a state that is
+          incremented each time onChange of new field with a piece drop, and use a custom
+          modifier animating that state, in a way that it does a cycle over the value change of 1,
+          like a GeometryEffect
+        - Or, animate path, either way I need to know about the Animatable protocol
+    - Stage 1: line clear and adds
+        - Filled rows are still in data, but marked, and garbages are already added below
+        - Need field rows to be able to draw more than 20 rows
+    - Stage 2: clamp rows back together
     
-- Notify bot stopped
-    - At least update latest available best moves
-    - Some property to check this
-    - Maybe a closure callback?
-    - This ties into logic for automatically playing through to the end
-
-- Animate placing piece
-    - Generate the move sequence from spawn to final position
+        
+    - Consider helping it with permanent/transcient states
+    
+[Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
+[Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
+[Advanced SwiftUI Animations – Part 2: GeometryEffect](https://swiftui-lab.com/swiftui-animations-part2/)
+[Tweaking SwiftUI animations with GeometryEffect](https://nerdyak.tech/development/2019/08/29/tweaking-animations-with-GeometryEffect.html)
     
 - My fancy-looking generator bot doesn't actually make things run on separate
   threads / concurrently
     - Printing out the thread in the actual work functions show this
     - Why was it previously showing ~140% CPU usage sometimes?
         - Suspect that it's the detached node deallocation
+    - Maybe this doesn't matter much, because BCTS eval is too fast anyways
     
 - Keep thinking about architecture
 
@@ -46,6 +85,8 @@
         https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
     - On iOS, seems to need to custom-class the UIHostingController
     - On-screen control is the more orthodox option for iOS
+
+- Rewind play steps
 
 
 ## Old items
