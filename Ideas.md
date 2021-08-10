@@ -4,6 +4,31 @@
 
 - Don't draw piece in intermediate (line-clearing) state 
 
+- Twist and slide moves
+    - Implement SRS wallkicks
+    - "Hinge" detection
+        Check for 2x2 shape with only top left or right filled
+        ```
+        O _          _ O
+        _ _    or    _ _
+        ```
+    - Only check from natural drop positions, and not hanging in midair
+
+- Record game in-memory and long-term
+    - Two seeds, history of move pieces
+        - These are enough to programmatically recreate the game
+    - Optionally, available piece sequence, clear counts, fields
+
+- Show other info, e.g. step
+
+- Add controls, e.g. replay history
+
+- Q: is there a possible bad condition where a piece is placed, waiting for
+  line-clear animation, while bot is restarted but immediately self-stopped,
+  triggering a new play before the animation is done?
+    - Consider further dividing the controller, separate out the view /
+      animation logic
+
 - Animation
     - Placing piece
         - Generate the move sequence from spawn to final position
@@ -12,22 +37,26 @@
    
 - Play piece animation sequence:
     - Stage 0: weighted piece fall
-        - Animate whole field (including grid lines and ghost, but not play piece?)
-        - One possible way to do this, though hopefully can find something easier:
-          keep a state that is incremented each time onChange of new field with a
-          piece drop, and use a custom modifier animating that state, in a way that
-          it does a cycle over the value change of 1, like a GeometryEffect
-        - Or, animate path, either way I need to know about the Animatable protocol
+        - Animate whole field (including grid lines and ghost, but not play
+          piece?)
+        - One possible way to do this, though hopefully can find something
+          easier:
+          keep a state that is incremented each time onChange of new field with
+          a piece drop, and use a custom modifier animating that state, in a
+          way that it does a cycle over the value change of 1, like a
+          GeometryEffect
+        - Or, animate path, either way I need to know about the Animatable
+          protocol
             - Preliminary test with offset, it interferes with other animations
               so putting it on hold
     - Stage 1: line clear and adds
-        - Filled rows are still in data, but marked, and garbages are already added
-          below, clipped outside of view
+        - Filled rows are still in data, but marked, and garbages are already
+          added below, clipped outside of view
     - Stage 2: clamp rows back together
     
-    - If I want more steps of animations that doesn't naturally differentiate themsleves,
-      might need a new enum in the DisplayField to say what's happened so I can
-      set animations accordingly
+    - If I want more steps of animations that doesn't naturally differentiate
+      themsleves, might need a new enum in the DisplayField to say what's
+      happened so I can set animations accordingly
         
     
 [Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
@@ -38,17 +67,20 @@
 
 - Issue: GameplayController's logic/structure is getting so complicated, bugs creep up
     - The update logic might be improved
+    - May want update quicker than 1 sec, but then clear-line animation may be
+      more of an issue
 
 - Bug: start new game in the middle of auto play might crash
     - If it doesn't crash, it seems to have hidden bots playing in background
 
-- There seems to be a subtle bug of timer that's still running through end of game
-    - or more specifically, if the game is done, and bot play is clicked again, then
-      click new game, the moves list would be updated to be empty, but I can still
-      click bot play to start playing correctly
-    - I think the callback is still called, but there might be a race condition that
-      causes it to not cancel the timer correctly?  Maybe the stop should be checked
-      more aggressively, at every timer tick?
+- There seems to be a subtle bug of timer that's still running through end of
+  game
+    - or more specifically, if the game is done, and bot play is clicked again,
+      then click new game, the moves list would be updated to be empty, but I
+      can still click bot play to start playing correctly
+    - I think the callback is still called, but there might be a race condition
+      that causes it to not cancel the timer correctly?  Maybe the stop should
+      be checked more aggressively, at every timer tick?
       
 - My fancy-looking generator bot doesn't actually make things run on separate
   threads / concurrently
@@ -60,7 +92,8 @@
 - Keep thinking about architecture
 
 - Maybe put field in a drawingGroup
-    - Or maybe not necessary, automatically done, I don't see many views when debugging
+    - Or maybe not necessary, automatically done, I don't see many views when
+      debugging
 
 - Document GameState
 - Document DigEnvironment
@@ -80,8 +113,6 @@
         https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
     - On iOS, seems to need to custom-class the UIHostingController
     - On-screen control is the more orthodox option for iOS
-
-- Rewind play steps
 
 
 ## Old items
