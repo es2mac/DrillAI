@@ -65,6 +65,23 @@ Other misc notes
       faster than the vDSP calls.)
 
 
+## Tree's node search finding evaluated nodes
+
+- An attempt to make the tree search for wider nodes -- When the search finds
+  an evaluated node, the tree directly propagates a visit count and same value.
+  The increase in visit count should decrease its "exploration" score, and the
+  same value keeps the "exploitation" score constant.  But since a terminal
+  state tends to have good value, my worry was that it's make this "trunk" that
+  much stronger.
+- I tried to change the logic to:  In each batch (e.g. 32) of finding nodes to
+  evaluate, for each evaluated node I find, I add a virtual count that is
+  reverted once the batch is done, and propagate the old value just once for
+  that evaluated node.
+    - Surprisingly, the end-games became erratic, I assume it's because the
+      terminal node is losing out on visit counts, because it has no children.
+    - So in the end, I scratched the idea.
+  
+
 ## Coordinating two async tasks
 
 - In trying to coordinate between the tree and evaluator, I went through all

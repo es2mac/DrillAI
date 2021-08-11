@@ -3,6 +3,12 @@
 
 
 - Don't draw piece in intermediate (line-clearing) state 
+- Draw play piece & hold piece correctly
+    - Need to think about the use of GameState, which doesn't differentiate
+    - And it's getting ugly to have so many moving pieces
+    - Might make a new single struct to encapsulate the elements
+    - Also think about how to display "no action" i.e. no active piece at the
+      end of game
 
 - Twist and slide moves
     - Implement SRS wallkicks
@@ -32,6 +38,7 @@
 - Animation
     - Placing piece
         - Generate the move sequence from spawn to final position
+        - Might want to move to [TimelineView](https://swiftui-lab.com/swiftui-animations-part4/)
     - Row clear explosion or flash
     - Hard drop flash
    
@@ -58,6 +65,10 @@
       themsleves, might need a new enum in the DisplayField to say what's
       happened so I can set animations accordingly
         
+- Rows animation:  It may be still better to redo the row position logic with
+  offset, instead of having the total height fluctuate, which I suspect is a
+  source of visual instability
+
     
 [Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
 [Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
@@ -108,6 +119,8 @@
     - Then start collecting data
     - Problem:  Can't run under macOS 11...
     
+- Can add sound? https://freesound.org
+
 - A way to control... so one can manually play?
     - On mac handling keyboard:
         https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
