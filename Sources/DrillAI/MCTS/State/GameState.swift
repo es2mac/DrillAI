@@ -59,7 +59,7 @@ extension GameState: MCTSState {}
 public extension GameState {
     typealias Action = Piece
 
-    var playPiece: Tetromino {
+    var playPieceType: Tetromino {
         hold == nil ? environment.pieces[dropCount] : environment.pieces[dropCount + 1]
     }
 
@@ -83,7 +83,7 @@ public extension GameState {
 
         newGarbageCleared += garbageCleared
         newField = fieldReplenishedWithGarbage(newField)
-        let newHold = (piece.type == playPiece) ? hold : playPiece
+        let newHold = (piece.type == playPieceType) ? hold : playPieceType
 
         return GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared)
     }

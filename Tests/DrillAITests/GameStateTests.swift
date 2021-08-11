@@ -31,25 +31,25 @@ final class GameStateTests: XCTestCase {
         var piece = state.getLegalActions().filter { $0.type == .Z }.randomElement()!
         state = state.getNextState(for: piece)
         XCTAssertNil(state.hold)
-        XCTAssertEqual(state.playPiece, .L)
+        XCTAssertEqual(state.playPieceType, .L)
 
         // 2: hold L, drop S, next play piece is J
         piece = state.getLegalActions().filter { $0.type == .S }.randomElement()!
         state = state.getNextState(for: piece)
         XCTAssertEqual(state.hold, .L)
-        XCTAssertEqual(state.playPiece, .J)
+        XCTAssertEqual(state.playPieceType, .J)
 
         // 3: Keep holding L, drop J, next play T
         piece = state.getLegalActions().filter { $0.type == .J }.randomElement()!
         state = state.getNextState(for: piece)
         XCTAssertEqual(state.hold, .L)
-        XCTAssertEqual(state.playPiece, .T)
+        XCTAssertEqual(state.playPieceType, .T)
 
         // 4: Swap to hold T, play L, next play I
         piece = state.getLegalActions().filter { $0.type == .L }.randomElement()!
         state = state.getNextState(for: piece)
         XCTAssertEqual(state.hold, .T)
-        XCTAssertEqual(state.playPiece, .I)
+        XCTAssertEqual(state.playPieceType, .I)
     }
 
     func testIncrementGarbageCleared() throws {
@@ -95,6 +95,6 @@ final class GameStateTests: XCTestCase {
         XCTAssertEqual(state.garbageCleared, 3)
         XCTAssertEqual(state.field.garbageCount, 8)
 //        print(state.field)
-//        print(state.playPiece, state.hold as Any)
+//        print(state.playPieceType, state.hold as Any)
     }
 }
