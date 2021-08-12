@@ -128,10 +128,6 @@ extension MCTSNode {
         }
         status = .evaluated
     }
-}
-
-
-extension MCTSNode {
 
     /// Get the child that corresponds to performing the best action.  Since MCTS
     /// visit nodes while balancing exploration & exploitation, the most visited
@@ -152,11 +148,19 @@ extension MCTSNode {
         bestActionValuedChildIndex.map(getOrInitializeChildNode)
     }
 
+    func removeParent() {
+        parent = nil
+    }
+}
+
+
+private extension MCTSNode {
+
     /// Index of the child node with the best action score.
     /// If this node has not been evaluated, then normally the children won't be either,
     /// in which case a random child index is returned.
     /// Returns nil if there's no children.
-    private var bestActionValuedChildIndex: Int? {
+    var bestActionValuedChildIndex: Int? {
         guard !children.isEmpty else {
             return nil
         }
@@ -168,7 +172,7 @@ extension MCTSNode {
     }
 
     /// Get a child node, initialize the node if it hasn't been already.
-    private func getOrInitializeChildNode(at index: Int) -> MCTSNode {
+    func getOrInitializeChildNode(at index: Int) -> MCTSNode {
         if let childNode = children[index] {
             return childNode
         }
@@ -185,7 +189,7 @@ extension MCTSNode {
     /// ```Int(vDSP.indexOfMaximum(actionScores).0)```
     /// The logic is the same, just avoiding array allocations.
     /// Keeping the actionScore & dependent values code as documentation.
-    private func getBestActionValuedChildIndex() -> Int {
+    func getBestActionValuedChildIndex() -> Int {
         // Scalar values
         let totalN = max(1, vDSP.sum(childN) - 1)
         let puctConstant = 2.5
@@ -212,13 +216,13 @@ extension MCTSNode {
     /// The PUCT action scores of all children, i.e. sum of the exploitation scores
     /// (Q) and exploration scores (U).
     /// Q = meanActionValues, U = puctValues, return Q + U
-    private var actionScores: [Double] {
+    var actionScores: [Double] {
         vDSP.add(meanActionValues, puctValues)
     }
 
     /// The "Exploitation" part of the score
     /// Returns Q = W / (1 + N)
-    private var meanActionValues: [Double] {
+    var meanActionValues: [Double] {
         vDSP.divide(childW, vDSP.add(1, childN))
     }
 
@@ -226,7 +230,7 @@ extension MCTSNode {
     /// Returns U = some constants \* priors \* sqrt(totalN) / (1 / N)
     /// Constants here needs tuning as training progress, e.g. when the model is
     /// still really bad, Q is uselessly small, so we might need a smaller U.
-    private var puctValues: [Double] {
+    var puctValues: [Double] {
 
         // Tune this multiple -- MiniGo uses 2.0.
         let puctConstant = 2.5

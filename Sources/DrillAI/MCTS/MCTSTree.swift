@@ -55,6 +55,7 @@ extension MCTSTree {
             let oldRoot = root
             Task.detached(priority: .medium) { _ = oldRoot }
             root = child
+            root.removeParent()
         } else {
             assertionFailure("Not a valid next action")
         }
