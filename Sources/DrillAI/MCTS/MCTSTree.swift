@@ -33,9 +33,17 @@ extension MCTSTree {
     }
     
     /// See the best actions so far, ordered by visit counts.  Empty when there is
-    /// no action.
+    /// no action, i.e. terminal state.
     func getOrderedRootActions() -> [ActionVisits] {
-        zip(root.nextActions, root.childN)
+        if case .initial = root.status {
+            // Don't expand here, because it'll skip root for getting evaluated,
+            // and the root will be stuck at .expanded status, then it'll always
+            // choose a random child for evaluation
+            return root.state.getLegalActions().map {
+                ActionVisits(action: $0, visits: 0)
+            }
+        }
+        return zip(root.nextActions, root.childN)
             .sorted { $0.1 > $1.1 }
             .map { ActionVisits(action: $0, visits: Int($1)) }
     }
