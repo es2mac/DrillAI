@@ -2,13 +2,16 @@
 ## Possible next steps
 
 
-- Don't draw piece in intermediate (line-clearing) state 
-- Draw play piece & hold piece correctly
-    - Need to think about the use of GameState, which doesn't differentiate
-    - And it's getting ugly to have so many moving pieces
-    - Might make a new single struct to encapsulate the elements
-    - Also think about how to display "no action" i.e. no active piece at the
-      end of game
+- Ability to manually play using the current menu system without having to run
+  bot
+    - Currently just crashes
+    
+- Bot play/pause button
+
+- Increase update frequency
+    - Then maybe ignore bot self-stop
+
+- Fix all the SwiftUI previews, in due time
 
 - Twist and slide moves
     - Implement SRS wallkicks
@@ -65,10 +68,6 @@
       themsleves, might need a new enum in the DisplayField to say what's
       happened so I can set animations accordingly
         
-- Rows animation:  It may be still better to redo the row position logic with
-  offset, instead of having the total height fluctuate, which I suspect is a
-  source of visual instability
-
     
 [Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
 [Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
@@ -126,6 +125,14 @@
         https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
     - On iOS, seems to need to custom-class the UIHostingController
     - On-screen control is the more orthodox option for iOS
+
+- Rethink the treatment of typealias ActionVisits
+
+- Possible inspiration / different architecture: alpha-beta pruning & NNUE
+    - https://github.com/glinscott/nnue-pytorch/blob/master/docs/nnue.md
+
+- Another simple UCT implementation, for study and reference
+    - https://github.com/dkappe/a0lite
 
 
 ## Old items
