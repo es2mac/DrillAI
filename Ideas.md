@@ -1,15 +1,37 @@
 
 ## Possible next steps
 
-
-- Ability to manually play using the current menu system without having to run
-  bot
-    - Currently just crashes
-    
-- Bot play/pause button
+- Debug and revamp GameplayController logic
+    - Scattered in various items below
 
 - Increase update frequency
     - Then maybe ignore bot self-stop
+
+- Q: is there a possible bad condition where a piece is placed, waiting for
+  line-clear animation, while bot is restarted but immediately self-stopped,
+  triggering a new play before the animation is done?
+    - Consider further dividing the controller, separate out the view /
+      animation logic
+
+- Issue: GameplayController's logic/structure is getting so complicated, bugs creep up
+    - The update logic might be improved
+    - May want update quicker than 1 sec, but then clear-line animation may be
+      more of an issue
+
+- Bug: start new game in the middle of auto play might crash
+    - If it doesn't crash, it seems to have hidden bots playing in background
+
+- There seems to be a subtle bug of timer that's still running through end of
+  game
+    - or more specifically, if the game is done, and bot play is clicked again,
+      then click new game, the moves list would be updated to be empty, but I
+      can still click bot play to start playing correctly
+    - I think the callback is still called, but there might be a race condition
+      that causes it to not cancel the timer correctly?  Maybe the stop should
+      be checked more aggressively, at every timer tick?
+      
+      
+- Bot play/pause button
 
 - Fix all the SwiftUI previews, in due time
 
@@ -32,66 +54,21 @@
 
 - Add controls, e.g. replay history
 
-- Q: is there a possible bad condition where a piece is placed, waiting for
-  line-clear animation, while bot is restarted but immediately self-stopped,
-  triggering a new play before the animation is done?
-    - Consider further dividing the controller, separate out the view /
-      animation logic
-
 - Animation
     - Placing piece
         - Generate the move sequence from spawn to final position
-        - Might want to move to [TimelineView](https://swiftui-lab.com/swiftui-animations-part4/)
-    - Row clear explosion or flash
-    - Hard drop flash
+            - Might create an AsyncStream in the view model as a queuing system
+              for movements
+        - Hard drop flash
+        - Whole field weighted bounce (encountered interference when
+          experimenting)
    
-- Play piece animation sequence:
-    - Stage 0: weighted piece fall
-        - Animate whole field (including grid lines and ghost, but not play
-          piece?)
-        - One possible way to do this, though hopefully can find something
-          easier:
-          keep a state that is incremented each time onChange of new field with
-          a piece drop, and use a custom modifier animating that state, in a
-          way that it does a cycle over the value change of 1, like a
-          GeometryEffect
-        - Or, animate path, either way I need to know about the Animatable
-          protocol
-            - Preliminary test with offset, it interferes with other animations
-              so putting it on hold
-    - Stage 1: line clear and adds
-        - Filled rows are still in data, but marked, and garbages are already
-          added below, clipped outside of view
-    - Stage 2: clamp rows back together
-    
-    - If I want more steps of animations that doesn't naturally differentiate
-      themsleves, might need a new enum in the DisplayField to say what's
-      happened so I can set animations accordingly
-        
-    
 [Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
 [Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
 [Advanced SwiftUI Animations – Part 2: GeometryEffect](https://swiftui-lab.com/swiftui-animations-part2/)
 [Tweaking SwiftUI animations with GeometryEffect](https://nerdyak.tech/development/2019/08/29/tweaking-animations-with-GeometryEffect.html)
     
 
-- Issue: GameplayController's logic/structure is getting so complicated, bugs creep up
-    - The update logic might be improved
-    - May want update quicker than 1 sec, but then clear-line animation may be
-      more of an issue
-
-- Bug: start new game in the middle of auto play might crash
-    - If it doesn't crash, it seems to have hidden bots playing in background
-
-- There seems to be a subtle bug of timer that's still running through end of
-  game
-    - or more specifically, if the game is done, and bot play is clicked again,
-      then click new game, the moves list would be updated to be empty, but I
-      can still click bot play to start playing correctly
-    - I think the callback is still called, but there might be a race condition
-      that causes it to not cancel the timer correctly?  Maybe the stop should
-      be checked more aggressively, at every timer tick?
-      
 - My fancy-looking generator bot doesn't actually make things run on separate
   threads / concurrently
     - Printing out the thread in the actual work functions show this
@@ -101,14 +78,14 @@
     
 - Keep thinking about architecture
 
-- Maybe put field in a drawingGroup
-    - Or maybe not necessary, automatically done, I don't see many views when
-      debugging
-
-- Document GameState
-- Document DigEnvironment
+- Documentation
+    - GameState
+    - DigEnvironment
+    - Everything
 
 - More concrete types for where I'm using tuples to pass information around
+
+- Rethink the treatment of typealias ActionVisits
 
 - "Merge equivalent children" idea
     - Check popular nodes 2-step away from root and merge equivalent ones
@@ -125,14 +102,19 @@
         https://stackoverflow.com/questions/61153562/how-to-detect-keyboard-events-in-swiftui-on-macos
     - On iOS, seems to need to custom-class the UIHostingController
     - On-screen control is the more orthodox option for iOS
-
-- Rethink the treatment of typealias ActionVisits
+        - Direct touch manipulation / gesture makes the most sense
 
 - Possible inspiration / different architecture: alpha-beta pruning & NNUE
     - https://github.com/glinscott/nnue-pytorch/blob/master/docs/nnue.md
 
 - Another simple UCT implementation, for study and reference
     - https://github.com/dkappe/a0lite
+
+- Another field rows animation and drawing strategy:
+    - Only have nonempty rows, and each row has an index, updated
+      appropriately.  This way we can just use the index to offset each row.
+    - Custom transition for row disappearing, so the sequence goes: start with
+      filled rows, remove filled rows, update index.
 
 
 ## Old items
