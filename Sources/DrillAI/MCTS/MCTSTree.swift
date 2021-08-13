@@ -49,8 +49,12 @@ extension MCTSTree {
     func promoteRoot(action: Action) -> State where Action: Equatable {
         cancelOutstandingEvaluations()
 
-        if let index = root.nextActions.index(of: action),
-           let child = root.children[index] {
+        if case .initial = root.status {
+            root.expand()
+        }
+
+        if let index = root.nextActions.index(of: action) {
+            let child = root.getOrInitializeChildNode(at: index)
             // Hackery to move large tree deallocation to the background
             let oldRoot = root
             Task.detached(priority: .medium) { _ = oldRoot }

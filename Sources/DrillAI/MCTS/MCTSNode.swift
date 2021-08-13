@@ -148,6 +148,20 @@ extension MCTSNode {
         bestActionValuedChildIndex.map(getOrInitializeChildNode)
     }
 
+    /// Get a child node, initialize the node if it hasn't been already.
+    func getOrInitializeChildNode(at index: Int) -> MCTSNode {
+        if let childNode = children[index] {
+            return childNode
+        }
+
+        let action = nextActions[index]
+        let newState = state.getNextState(for: action)
+        let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
+
+        children[index] = childNode
+        return childNode
+    }
+
     func removeParent() {
         parent = nil
     }
@@ -169,20 +183,6 @@ private extension MCTSNode {
         case .expanded: return Int.random(in: 0..<children.count)
         case .evaluated: return getBestActionValuedChildIndex()
         }
-    }
-
-    /// Get a child node, initialize the node if it hasn't been already.
-    func getOrInitializeChildNode(at index: Int) -> MCTSNode {
-        if let childNode = children[index] {
-            return childNode
-        }
-
-        let action = nextActions[index]
-        let newState = state.getNextState(for: action)
-        let childNode = MCTSNode(state: newState, parent: self, indexInParent: index)
-
-        children[index] = childNode
-        return childNode
     }
 
     /// By informal testing, this is 2.5x speedup from doing
