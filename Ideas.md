@@ -1,25 +1,12 @@
 
 ## Possible next steps
 
-- Debug and revamp GameplayController logic
-    - Scattered in various items below
+- Race condition:  If a new game is started when the view model is in the middle of
+  updating, then the visual will go out of sync and may even crash
+    - Saw crash in getting next display field -- old display field was nearly cleared,
+      then new field to try to match is unrelated.  Lucky that it causes a crash.
+    - Possibly fix this when implementing view model action sequence with AsyncStream
 
-- "Stop thinking" is sometimes unresponsive
-    - Might have something to do with resumeThinkingAfterPlay
-
-- Bug: start new game in the middle of auto play might crash
-    - If it doesn't crash, it seems to have hidden bots playing in background
-
-- There seems to be a subtle bug of timer that's still running through end of
-  game
-    - or more specifically, if the game is done, and bot play is clicked again,
-      then click new game, the moves list would be updated to be empty, but I
-      can still click bot play to start playing correctly
-    - I think the callback is still called, but there might be a race condition
-      that causes it to not cancel the timer correctly?  Maybe the stop should
-      be checked more aggressively, at every timer tick?
-      
-      
 - Bot play/pause button
 
 - Fix all the SwiftUI previews, in due time
@@ -49,8 +36,7 @@
             - Might create an AsyncStream in the view model as a queuing system
               for movements
         - Hard drop flash
-        - Whole field weighted bounce (encountered interference when
-          experimenting)
+   
    
 [Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
 [Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
