@@ -4,19 +4,8 @@
 - Debug and revamp GameplayController logic
     - Scattered in various items below
 
-- Increase update frequency
-    - Then maybe ignore bot self-stop
-
-- Q: is there a possible bad condition where a piece is placed, waiting for
-  line-clear animation, while bot is restarted but immediately self-stopped,
-  triggering a new play before the animation is done?
-    - Consider further dividing the controller, separate out the view /
-      animation logic
-
-- Issue: GameplayController's logic/structure is getting so complicated, bugs creep up
-    - The update logic might be improved
-    - May want update quicker than 1 sec, but then clear-line animation may be
-      more of an issue
+- "Stop thinking" is sometimes unresponsive
+    - Might have something to do with resumeThinkingAfterPlay
 
 - Bug: start new game in the middle of auto play might crash
     - If it doesn't crash, it seems to have hidden bots playing in background
