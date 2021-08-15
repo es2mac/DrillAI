@@ -1,5 +1,39 @@
 
 
+## Animation in SwiftUI
+
+- Implicit animation can accomplish a lot.  Here the line clear animations are
+  all implicit.
+- Explicit animation used for shaking/sinking the field when a piece dropped.
+  I'm not sure if there's an implicit way to do this, but explicit animation
+  does give more control for which values should be animated, and for how long.
+    - A particular issue solved by animating explicitly is that the shake's
+      starting and ending positions are the same (the field sinks down then
+      floats back up), so it seems there's no way to construct it as
+      transforming value 1 to value 2, also it has a weird timing curve.
+
+- An interesting problem occurred when I changed the way I sequence value
+  updates in the game's view model.  When it was using hard-coded async-await,
+  row clear explosions appear most of the time in the simulator.  But when
+  rewitten using OperationQueue and dispatch, it doesn't show most of the time.
+    - Having inspected a bunch of aspects e.g. switching dispatch to main back
+      to using Task & @MainActor doesn't help.
+    - Slowing down the timing makes the animations show much more consistently.
+      So, my (reasonable IMO) guess is that OperationQueue introduces a bit
+      more overhead than the new async/await, be it context switching or
+      whatnot.  That's just a little too much and the black-box SwiftUI display
+      & animation had to skip ahead some, at least for the simulator.  It
+      remains to be seen how it'd work on an actual device, and whether it'd be
+      worth trying to rewrite the thing with AsyncSequence.
+
+- Some resources referenced:
+
+[Advanced SwiftUI Transitions](https://swiftui-lab.com/advanced-transitions/)
+[Advanced SwiftUI Animations – Part 1: Paths](https://swiftui-lab.com/swiftui-animations-part1/)
+[Advanced SwiftUI Animations – Part 2: GeometryEffect](https://swiftui-lab.com/swiftui-animations-part2/)
+[Tweaking SwiftUI animations with GeometryEffect](https://nerdyak.tech/development/2019/08/29/tweaking-animations-with-GeometryEffect.html)
+
+
 ## The BCTS bot notes
 
 - The BCTS bot got to a point that's pretty workable.
@@ -63,6 +97,15 @@ Other misc notes
       arrays allocation should've helped a lot.  (although I do wonder if a
       single-pass, plain code calculation of action values could in fact be
       faster than the vDSP calls.)
+    - An idea that I'm not sure has prior art for:  Merging equivalent nodes.
+      Seems like a pretty reasonable idea.  If we start from the root, look at
+      the first couple most popular branches, and they have equivalent nodes
+      one level down, then maybe we could cut one of them, either merging the
+      trees or just break off the smaller one (just redirecting one of them
+      might not result in the right traversal behavior if the backprop doesn't
+      go through both).  Though it's hard to think through whether this works,
+      because the subtree that has its branch cut would look less promising but
+      that may not be the case.
 
 
 ## Tree's node search finding evaluated nodes
