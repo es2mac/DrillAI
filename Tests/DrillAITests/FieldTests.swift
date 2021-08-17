@@ -99,7 +99,7 @@ final class FieldTests: XCTestCase {
         ]
         let field = Field(storage: storage)
         for type in Tetromino.allCases {
-            let count = Set(field.findAllSimplePlacements(for: [type])).count
+            let count = Set(field.findAllPlacements(for: [type])).count
             switch type {
             case .I:
                 XCTAssertEqual(count, 17)
@@ -128,10 +128,10 @@ final class FieldTests: XCTestCase {
             0b00000_00001,
         ]
         let field = Field(storage: storage)
-        let types = Tetromino.allCases.shuffled().prefix(2)
-        let set1 = Set(field.findAllSimplePlacements(for: [types[0]]))
-        let set2 = Set(field.findAllSimplePlacements(for: [types[1]]))
-        let setBoth = Set(field.findAllSimplePlacements(for: Array(types)))
+        let types = Array(Tetromino.allCases.shuffled().prefix(2))
+        let set1 = Set(field.findAllPlacements(for: [types[0]]))
+        let set2 = Set(field.findAllPlacements(for: [types[1]]))
+        let setBoth = Set(field.findAllPlacements(for: types))
         XCTAssertEqual(setBoth, set1.union(set2))
     }
 

@@ -72,7 +72,7 @@ public extension GameState {
         if field.garbageCount == 0 {
             return []
         }
-        return field.findAllSimplePlacements(for: playablePieces)
+        return field.findAllPlacements(for: playablePieces)
     }
 
     func getNextState(for piece: Piece) -> GameState {

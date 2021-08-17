@@ -121,23 +121,24 @@ public extension Field {
         return (newField: newField, garbageCleared: garbageCleared)
     }
 
-    /// Find all possible simple (hard-dropped from top) placements of tetrominos.
+    func findAllPlacements(for types: [Tetromino], slidesAndTwists: Bool = false) -> [Piece] {
+        let lineMasks = makeMultiLineMasks()
+        return types.flatMap { findAllSimplePlacements(for: $0, lineMasks: lineMasks) }
+    }
+}
+
+internal extension Field {
+    /// Find all possible simple (hard-dropped from top) placements of a tetromino.
     ///
     /// Simple placements are those reached by shifting & rotating first
     /// at the top of the field, then dropped straight down.
-    /// That is, no soft-drop then shift or twist.
-    ///
-    /// In the future, we want to find all possible placements (including slides and spins).
-    /// For that we need to implement spin rules, graph search all placements, and eliminate isomorphic results.
-    func findAllSimplePlacements(for types: [Tetromino]) -> [Piece] {
-        let lineMasks = makeMultiLineMasks()
+    /// That is, no soft-drop then slide or twist.
+    func findAllSimplePlacements(for type: Tetromino, lineMasks: [Int]) -> [Piece] {
         // Find all the starting positions (x & orientation) for all the pieces
         // (1 or 2, i.e. play & hold), before figuring out how far it can drop.
-        var pieces: [Piece] = types.flatMap { type in
-            getStartingPlacements(type: type).map {
+        var pieces: [Piece] = getStartingPlacements(type: type).map {
                 Piece(type: type, x: $0.x, y: 0, orientation: $0.orientation)
             }
-        }
         // Find the lowest that the piece can drop.
         // Loop with index so we can set the y value in-place.
         for i in 0 ..< pieces.count {
@@ -153,6 +154,10 @@ public extension Field {
         }
         return pieces
     }
+
+    /// Find all possible placements (including slides and spins).
+    /// Graph search all placements, and eliminate isomorphic results.
+
 
     /// Try to find a hinged, filled cell with 3 empty neighbors, as a fast
     /// pre-check for whether there may be a possible slide or twist move.
