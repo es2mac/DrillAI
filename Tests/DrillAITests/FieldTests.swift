@@ -145,7 +145,7 @@ final class FieldTests: XCTestCase {
         ]
         let field = Field(storage: storage)
 
-        XCTAssertTrue(!field.hasHinge())
+        XCTAssertTrue(!field.hasHinge(lineMasks: field.makeMultiLineMasks()))
     }
 
     func testFieldThatHasHinge() throws {
@@ -166,7 +166,7 @@ final class FieldTests: XCTestCase {
         let field = Field(storage: storage)
         let field2 = Field(storage: storage2)
 
-        XCTAssertTrue(field.hasHinge())
-        XCTAssertTrue(field2.hasHinge())
+        XCTAssertTrue(field.hasHinge(lineMasks: field.makeMultiLineMasks()))
+        XCTAssertTrue(field2.hasHinge(lineMasks: field.makeMultiLineMasks()))
     }
 }
