@@ -134,4 +134,39 @@ final class FieldTests: XCTestCase {
         let setBoth = Set(field.findAllSimplePlacements(for: Array(types)))
         XCTAssertEqual(setBoth, set1.union(set2))
     }
+
+    func testFieldThatDoesnNotHaveHinge() throws {
+        let storage: [Int16] = [
+            0b01111_11111,
+            0b01111_11111,
+            0b01101_11111,
+            0b00000_01111,
+            0b00000_00001,
+        ]
+        let field = Field(storage: storage)
+
+        XCTAssertTrue(!field.hasHinge())
+    }
+
+    func testFieldThatHasHinge() throws {
+        let storage: [Int16] = [
+            0b01111_11111,
+            0b01001_11111,
+            0b01101_11111,  // left hinge
+            0b00000_01111,
+            0b00000_00001,
+        ]
+        let storage2: [Int16] = [
+            0b00111_11111,  // right hinge
+            0b01111_11111,
+            0b01101_11111,
+            0b00000_01111,
+            0b00000_00001,
+        ]
+        let field = Field(storage: storage)
+        let field2 = Field(storage: storage2)
+
+        XCTAssertTrue(field.hasHinge())
+        XCTAssertTrue(field2.hasHinge())
+    }
 }

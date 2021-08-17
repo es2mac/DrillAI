@@ -153,6 +153,25 @@ public extension Field {
         }
         return pieces
     }
+
+    /// Try to find a hinged, filled cell with 3 empty neighbors, as a fast
+    /// pre-check for whether there may be a possible slide or twist move.
+    /// A hinge looks like:   O _          _ O
+    ///                       _ _    or    _ _
+    func hasHinge() -> Bool {
+        let mask = 0b00000_00011_00000_00011
+        let leftHinge = 0b00000_00001_00000_00000
+        let rightHinge = 0b00000_00010_00000_00000
+        for line in makeMultiLineMasks() {
+            for i in 0 ..< 9 {
+                let square = line & (mask << i)
+                if square == (leftHinge << i) || square == (rightHinge << i) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
 
 

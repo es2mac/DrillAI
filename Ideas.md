@@ -2,13 +2,6 @@
 ## Possible next steps
 
 - Twist and slide moves
-    - Implement SRS wallkicks
-    - "Hinge" detection as a fast first-screen
-        Check for 2x2 shape with only top left or right filled
-        ```
-        O _          _ O
-        _ _    or    _ _
-        ```
     - Only check from natural drop positions, and not hanging in midair
         - Searching from existing list of moves has a flaw, that is the S/Z/I
           pieces don't have separate L/R rotations for same positions
@@ -16,7 +9,6 @@
           array with pointer like a queue, plus a Set
 
 - Record game in-memory and long-term
-    - Core Data?
     - Add controls, e.g. replay history
     - Two seeds, history of move pieces
         - These are enough to programmatically recreate the game
