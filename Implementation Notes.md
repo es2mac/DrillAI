@@ -25,6 +25,18 @@
       & animation had to skip ahead some, at least for the simulator.  It
       remains to be seen how it'd work on an actual device, and whether it'd be
       worth trying to rewrite the thing with AsyncSequence.
+    - Another cue is that when inspecting the animation in slow motion, even
+      though the queue should've given the time for line clear to finish before
+      making another change, I saw an "I" piece placed onto a field that hasn't
+      properly combined after a line clear, so the piece was in 2 segments
+      briefly.  Maybe the operation queue timing is off, so not enough time was
+      given to the animation to properly run its course before it disappears
+      (and row transition is turned off, i.e. the row would disappear before it
+      could animate the isFilled property).
+    - It could be that my drawing/animation is just too inefficient.  Maybe
+      running on device would help, but there are also opportunities for
+      improvement e.g. don't try to draw empty rows, and/or custom drawing an
+      entire row as one shape.
 
 - Some resources referenced:
 

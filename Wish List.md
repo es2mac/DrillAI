@@ -10,14 +10,19 @@
 
 ## UI features
 
-- Rewrite view model's sequencing without Operation or Dispatch
-    - AsyncSequence & AsyncStream, see experimental playground
-
-- Another field rows animation and drawing strategy:
-    - Only have nonempty rows, and each row has an index, updated
-      appropriately.  This way we can just use the index to offset each row.
-    - Custom transition for row disappearing, so the sequence goes: start with
-      filled rows, remove filled rows, update index.
+- Performance upgrade, in part for smoother animation; see implementation note
+  on animation
+    - Rewrite view model's sequencing without Operation or Dispatch
+        - AsyncSequence & AsyncStream, see experimental playground
+    - Another field rows animation and drawing strategy:
+        - Only have nonempty rows, and each row has an index, updated
+          appropriately.  This way we can just use the index to offset each row.
+        - Custom transition for row disappearing, so the sequence goes: start with
+          filled rows, remove filled rows, update index.
+        - Or explicit animation, with a flag in FieldRowsView to blow up the
+          filled rows, flag changed in withAnimation with a small delay
+        - This would also allow me to keep the disappearing rows around longer,
+          so it can have all the time it wants to animate disappearance
 
 - Command-line program to play through 100-line games
     - Then start collecting data
