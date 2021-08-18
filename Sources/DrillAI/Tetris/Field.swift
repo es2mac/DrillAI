@@ -123,7 +123,13 @@ public extension Field {
 
     func findAllPlacements(for types: [Tetromino], slidesAndTwists: Bool = false) -> [Piece] {
         let lineMasks = makeMultiLineMasks()
-        return types.flatMap { findAllSimplePlacements(for: $0, lineMasks: lineMasks) }
+        var placements = types.flatMap { findAllSimplePlacements(for: $0, lineMasks: lineMasks) }
+        if slidesAndTwists, hasHinge(lineMasks: lineMasks) {
+            // Hack: piece may be entirely above existing cells, and kicking
+            // could raise bottom of piece by up to 3 cells, so pre-pad the masks
+            appendSlideAndTwistPlacements(to: &placements, lineMasks: lineMasks + [0, 0, 0, 0])
+        }
+        return placements
     }
 }
 
@@ -153,6 +159,46 @@ internal extension Field {
             pieces[i].y = bottomRow + boundOffsets.bottom
         }
         return pieces
+    }
+
+    /// Search for additional valid placements that are a slide away (any
+    /// distace), or one spin away from the given ones.
+    func appendSlideAndTwistPlacements(to placements: inout [Piece], lineMasks: [Int]) {
+        var foundPlacements = Set(placements)
+        var pieceIndex = 0
+        // Go through each piece like a queue
+        while pieceIndex < placements.count {
+            let piece = placements[pieceIndex]
+            // slides
+            do {
+                let bitmaskIndex = piece.bitmaskIndex
+                let boundOffsets = pieceBoundOffsets[bitmaskIndex]
+                let pieceMask = wholePieceBitmasks[bitmaskIndex] << (piece.x - boundOffsets.left)
+                let pieceBottomRowIndex = piece.y - boundOffsets.bottom
+                let pieceBottomRowMask = lineMasks[pieceBottomRowIndex]
+
+                // slide left
+                var shift = -1
+                var newPiece = piece
+                newPiece.x -= 1
+                // Is it in-bound?  Is there collision?  Is it already seen?
+                while newPiece.x - boundOffsets.left >= 0,
+                      ((pieceMask << shift) & pieceBottomRowMask) == 0,
+                      case (true, _) = foundPlacements.insert(newPiece) {
+                    // is it landed?
+                    if pieceBottomRowIndex == 0 || ((pieceMask << shift) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
+                        placements.append(newPiece)
+                    }
+                    shift -= 1
+                    newPiece.x -= 1
+                }
+
+                // slide right
+            }
+
+
+            pieceIndex += 1
+        }
     }
 
     /// Find all possible placements (including slides and spins).

@@ -169,4 +169,52 @@ final class FieldTests: XCTestCase {
         XCTAssertTrue(field.hasHinge(lineMasks: field.makeMultiLineMasks()))
         XCTAssertTrue(field2.hasHinge(lineMasks: field.makeMultiLineMasks()))
     }
+
+    func testFieldFindsLeftSlidePlacements() throws {
+        let storage: [Int16] = [
+            0b11011_11111,
+            0b01111_11111,
+            0b11111_11011,
+            0b00000_00111,
+            0b00000_11111,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.L])
+        let withSlides = field.findAllPlacements(for: [.L], slidesAndTwists: true)
+        XCTAssertEqual(withSlides.count, noSlides.count + 2)
+
+        let difference = withSlides.filter { !noSlides.contains($0) }
+        XCTAssertEqual(difference.count, 2)
+
+        let piece1 = Piece(type: .L, x: 5, y: 3, orientation: .up)
+        let piece2 = Piece(type: .L, x: 4, y: 3, orientation: .up)
+        XCTAssertTrue(difference.contains(piece1))
+        XCTAssertTrue(difference.contains(piece2))
+    }
+
+    func testFieldOnlyFindsLeftSlidePlacementsThatAreLanded() {
+        let storage: [Int16] = [
+            0b11011_11111,
+            0b01111_11111,
+            0b10000_01111,
+            0b00000_00111,
+            0b00000_11111,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.L])
+        let withSlides = field.findAllPlacements(for: [.L], slidesAndTwists: true)
+        XCTAssertEqual(withSlides.count, noSlides.count + 3)
+
+        let difference = withSlides.filter { !noSlides.contains($0) }
+        XCTAssertEqual(difference.count, 3)
+
+        let piece1 = Piece(type: .L, x: 5, y: 2, orientation: .up)
+        let piece2 = Piece(type: .L, x: 4, y: 3, orientation: .up)
+        let piece3 = Piece(type: .L, x: 5, y: 3, orientation: .down)
+        XCTAssertTrue(difference.contains(piece1))
+        XCTAssertTrue(difference.contains(piece2))
+        XCTAssertTrue(difference.contains(piece3))
+    }
 }
