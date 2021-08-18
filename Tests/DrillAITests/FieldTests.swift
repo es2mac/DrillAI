@@ -255,5 +255,19 @@ final class FieldTests: XCTestCase {
         XCTAssertTrue(difference.contains(piece))
     }
 
-//    func testFoundPlacementsHaveNoIsomorphicDuplicates() {}
+    func testFoundPlacementsHaveNoIsomorphicDuplicates() {
+        let storage: [Int16] = [
+            0b11011_11111,
+            0b01111_11111,
+            0b11111_00000,
+            0b00011_10000,
+        ]
+        let field = Field(storage: storage)
+
+        // This field has hinge, but S can't slide under it
+        let noSlides = field.findAllPlacements(for: [.S])
+        let withSlides = field.findAllPlacements(for: [.S], slidesAndTwists: true)
+        XCTAssertEqual(withSlides.count, noSlides.count)
+//        XCTAssertEqual(withSlides, noSlides)
+    }
 }

@@ -164,11 +164,10 @@ internal extension Field {
     /// Search for additional valid placements that are a slide away (any
     /// distace), or one spin away from the given ones.
     func appendSlideAndTwistPlacements(to placements: inout [Piece], lineMasks: [Int]) {
-        var foundPlacements = Set(placements)
-        var pieceIndex = 0
-        // Go through each piece like a queue
-        while pieceIndex < placements.count {
-            let piece = placements[pieceIndex]
+        var foundPlacementCodes = Set(placements.map(\.isomorphicCode))
+        var stack = placements
+
+        while let piece = stack.popLast() {
             // slides
             do {
                 let bitmaskIndex = piece.bitmaskIndex
@@ -184,9 +183,10 @@ internal extension Field {
                 // Is it in-bound?  Is there collision?  Is it already seen?
                 while newPiece.x - boundOffsets.left >= 0,
                       ((pieceMask << shift) & pieceBottomRowMask) == 0,
-                      case (true, _) = foundPlacements.insert(newPiece) {
+                      case (true, _) = foundPlacementCodes.insert(newPiece.isomorphicCode) {
                     // is it landed?
                     if pieceBottomRowIndex == 0 || ((pieceMask << shift) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
+                        // No need to add to stack
                         placements.append(newPiece)
                     }
                     shift -= 1
@@ -199,7 +199,7 @@ internal extension Field {
                 // Is it in-bound?  Is there collision?  Is it already seen?
                 while newPiece.x + boundOffsets.right < 10,
                       ((pieceMask << shift) & pieceBottomRowMask) == 0,
-                      case (true, _) = foundPlacements.insert(newPiece) {
+                      case (true, _) = foundPlacementCodes.insert(newPiece.isomorphicCode) {
                     // is it landed?
                     if pieceBottomRowIndex == 0 || ((pieceMask << shift) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
                         placements.append(newPiece)
@@ -210,17 +210,11 @@ internal extension Field {
             }
 
             // twists
-            do {
-
-            }
-
-
-            pieceIndex += 1
+//            do {
+//
+//            }
         }
     }
-
-    /// Find all possible placements (including slides and spins).
-    /// Graph search all placements, and eliminate isomorphic results.
 
 
     /// Try to find a hinged, filled cell with 3 empty neighbors, as a fast
@@ -252,6 +246,23 @@ internal extension Field {
             masks[i - 1] |= (masks[i] << 10)
         }
         return masks
+    }
+}
+
+
+private extension Piece {
+    /// Coding the piece based on its shape on the field, so two pieces have
+    /// the same code iff. they occupy the same cells.  In other words, S and
+    /// Z both have two pieces that have the same code.
+    /// Assumes that the piece actually fits in the field and not, e.g., extend
+    /// past the floor.
+    var isomorphicCode: Int {
+        let index = bitmaskIndex
+        let boundOffsets = pieceBoundOffsets[index]
+        let pieceLeft = x - boundOffsets.left
+        let pieceBottom = y - boundOffsets.bottom
+        let pieceMask = wholePieceBitmasks[index] << pieceLeft
+        return pieceMask * 10 + pieceBottom
     }
 }
 
