@@ -165,9 +165,10 @@ internal extension Field {
     /// distace), or one spin away from the given ones.
     func appendSlideAndTwistPlacements(to placements: inout [Piece], lineMasks: [Int]) {
         var foundPlacementCodes = Set(placements.map(\.isomorphicCode))
-        var stack = placements
+        let originalCount = placements.count
 
-        while let piece = stack.popLast() {
+        for i in 0 ..< originalCount {
+            let piece = placements[i]
             // slides
             do {
                 let bitmaskIndex = piece.bitmaskIndex
@@ -210,9 +211,68 @@ internal extension Field {
             }
 
             // twists
-//            do {
-//
-//            }
+            do {
+                // turn right
+                var newPiece = piece
+                newPiece.orientation = piece.orientation.rotatedRight()
+                // For rotations, we do want to check double rotations
+                var stack = [newPiece]
+                while var piece = stack.popLast() {
+                    let bitmaskIndex = piece.bitmaskIndex
+                    let pieceMask = wholePieceBitmasks[bitmaskIndex]
+                    let boundOffsets = pieceBoundOffsets[bitmaskIndex]
+
+                    var pieceLeft = piece.x - boundOffsets.left
+                    var pieceRight = piece.x + boundOffsets.right
+                    var pieceBottomRowIndex = piece.y - boundOffsets.bottom
+
+                    for (offsetX, offsetY) in rightKickOffsets[bitmaskIndex] {
+                        piece.x += offsetX
+                        piece.y += offsetY
+                        pieceLeft += offsetX
+                        pieceRight += offsetX
+                        pieceBottomRowIndex += offsetY
+                        // Is it in-bound?  Is there collision?  Is it already seen?
+                        if pieceBottomRowIndex >= 0,
+                           pieceLeft >= 0,
+                           pieceRight < 10,
+                           (pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex] == 0,
+                           case (true, _) = foundPlacementCodes.insert(piece.isomorphicCode) {
+                            // is it landed?
+                            if pieceBottomRowIndex == 0 || ((pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
+                                placements.append(piece)
+                                stack.append(piece)
+                                break
+                            }
+                        }
+                    }
+                }
+                
+                // turn left
+//                newPiece.orientation = piece.orientation.rotatedLeft()
+//                stack.append(newPiece)
+//                while var piece = stack.popLast() {
+//                    let bitmaskIndex = piece.bitmaskIndex
+//                    let boundOffsets = pieceBoundOffsets[bitmaskIndex]
+//                    var pieceMask = wholePieceBitmasks[bitmaskIndex] << (piece.x - boundOffsets.left)
+//                    var pieceBottomRowIndex = piece.y - boundOffsets.bottom
+//                    for (offsetX, offsetY) in leftKickOffsets[bitmaskIndex] {
+//                        pieceMask <<= offsetX
+//                        pieceBottomRowIndex += offsetY
+//                        piece.x += offsetX
+//                        piece.y += offsetY
+//                        if pieceBottomRowIndex >= 0,
+//                            pieceMask & lineMasks[pieceBottomRowIndex] == 0,
+//                           case (true, _) = foundPlacementCodes.insert(newPiece.isomorphicCode) {
+//                            placements.append(newPiece)
+//                            stack.append(piece)
+//                            break
+//                        }
+//                    }
+//                }
+
+                // For S and Z, check the isomorphic counterpart also
+            }
         }
     }
 

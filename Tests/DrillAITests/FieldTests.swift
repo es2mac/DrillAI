@@ -268,6 +268,44 @@ final class FieldTests: XCTestCase {
         let noSlides = field.findAllPlacements(for: [.S])
         let withSlides = field.findAllPlacements(for: [.S], slidesAndTwists: true)
         XCTAssertEqual(withSlides.count, noSlides.count)
-//        XCTAssertEqual(withSlides, noSlides)
+        XCTAssertEqual(withSlides, noSlides)
     }
+
+    func testFieldFindsInPlaceTSpin() {
+        let storage: [Int16] = [
+            0b11011_11011,
+            0b01111_10001,
+            0b11111_11000,
+            0b00011_10000,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.T])
+        let withSlides = field.findAllPlacements(for: [.T], slidesAndTwists: true)
+        XCTAssertGreaterThan(withSlides.count, noSlides.count)
+
+        let piece = Piece(type: .T, x: 2, y: 1, orientation: .down)
+        XCTAssertTrue(withSlides.contains(piece))
+    }
+
+    func testFieldFindsTwoTurnTSpin() {
+        let storage: [Int16] = [
+            0b11011_11011,
+            0b01111_10001,
+            0b11111_11000,
+            0b00011_10000,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.T])
+        let withSlides = field.findAllPlacements(for: [.T], slidesAndTwists: true)
+        XCTAssertEqual(withSlides.count, noSlides.count + 3)
+
+        let piece = Piece(type: .T, x: 2, y: 1, orientation: .right)
+        XCTAssertTrue(withSlides.contains(piece))
+    }
+
+//    func testFieldFindsLidlessSZSpins() {
+//
+//    }
 }

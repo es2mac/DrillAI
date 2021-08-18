@@ -7,7 +7,7 @@
 
 import Foundation
 
-private extension Piece.Orientation {
+extension Piece.Orientation {
     func rotatedRight() -> Piece.Orientation {
         switch self {
         case .up: return .right
@@ -28,6 +28,9 @@ private extension Piece.Orientation {
 }
 
 
+/// Cached offsets for every type and rotation.  A bit different from what's
+/// commonly done in that each offset is the "additional offset" on top of
+/// the one before it.
 let leftKickOffsets: [[(x: Int, y: Int)]] = .init(unsafeUninitializedCapacity: 7 * 4) { buffer, initializedCount in
     buffer.initialize(repeating: [])
     for type in Tetromino.allCases {
@@ -89,7 +92,13 @@ private extension Tetromino {
     func kickOffsets(from fromOrientation: Piece.Orientation, to toOrientation: Piece.Orientation) -> [Offset] {
         let fromOffsets = internalOffsets(for: fromOrientation)
         let toOffsets = internalOffsets(for: toOrientation)
-        return zip(fromOffsets, toOffsets).map(-)
+        var offsets = zip(fromOffsets, toOffsets).map(-)
+
+        for i in (1 ..< offsets.count).reversed() {
+            offsets[i] = offsets[i] - offsets[i-1]
+        }
+
+        return offsets
     }
 }
 
