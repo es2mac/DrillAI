@@ -194,6 +194,24 @@ internal extension Field {
                 }
 
                 // slide right
+                shift = 1
+                newPiece.x = piece.x + 1
+                // Is it in-bound?  Is there collision?  Is it already seen?
+                while newPiece.x + boundOffsets.right < 10,
+                      ((pieceMask << shift) & pieceBottomRowMask) == 0,
+                      case (true, _) = foundPlacements.insert(newPiece) {
+                    // is it landed?
+                    if pieceBottomRowIndex == 0 || ((pieceMask << shift) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
+                        placements.append(newPiece)
+                    }
+                    shift += 1
+                    newPiece.x += 1
+                }
+            }
+
+            // twists
+            do {
+
             }
 
 

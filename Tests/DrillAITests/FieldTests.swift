@@ -217,4 +217,43 @@ final class FieldTests: XCTestCase {
         XCTAssertTrue(difference.contains(piece2))
         XCTAssertTrue(difference.contains(piece3))
     }
+
+    func testFieldFindsSlidePlacementsAtBottomWithoutCrashing() throws {
+        let storage: [Int16] = [
+            0b00000_00111,
+            0b00000_11111,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.S])
+        let withSlides = field.findAllPlacements(for: [.S], slidesAndTwists: true)
+
+        let difference = withSlides.filter { !noSlides.contains($0) }
+
+        let piece = Piece(type: .S, x: 5, y: 0, orientation: .up)
+        XCTAssertTrue(difference.contains(piece))
+    }
+
+    func testFieldFindsRightSlidePlacements() throws {
+        let storage: [Int16] = [
+            0b11011_11111,
+            0b01111_11111,
+            0b11111_11011,
+            0b00110_00000,
+            0b00011_00000,
+        ]
+        let field = Field(storage: storage)
+
+        let noSlides = field.findAllPlacements(for: [.I])
+        let withSlides = field.findAllPlacements(for: [.I], slidesAndTwists: true)
+        XCTAssertEqual(withSlides.count, noSlides.count + 1)
+
+        let difference = withSlides.filter { !noSlides.contains($0) }
+        XCTAssertEqual(difference.count, 1)
+
+        let piece = Piece(type: .I, x: 3, y: 3, orientation: .up)
+        XCTAssertTrue(difference.contains(piece))
+    }
+
+//    func testFoundPlacementsHaveNoIsomorphicDuplicates() {}
 }
