@@ -213,11 +213,15 @@ internal extension Field {
             // twists
             do {
                 // turn right
-                var newPiece = piece
-                newPiece.orientation = piece.orientation.rotatedRight()
                 // For rotations, we do want to check double rotations
-                var stack = [newPiece]
+                var stack = [piece]
+                if let isomorphicPiece = piece.isomorphicPiece {
+                    stack.append(isomorphicPiece)
+                }
                 while var piece = stack.popLast() {
+                    // Get the kicks before changing piece orientation
+                    let kickOffsets = rightKickOffsets[piece.bitmaskIndex]
+                    piece.orientation = piece.orientation.rotatedRight()
                     let bitmaskIndex = piece.bitmaskIndex
                     let pieceMask = wholePieceBitmasks[bitmaskIndex]
                     let boundOffsets = pieceBoundOffsets[bitmaskIndex]
@@ -226,28 +230,30 @@ internal extension Field {
                     var pieceRight = piece.x + boundOffsets.right
                     var pieceBottomRowIndex = piece.y - boundOffsets.bottom
 
-                    for (offsetX, offsetY) in rightKickOffsets[bitmaskIndex] {
+                    for (offsetX, offsetY) in kickOffsets {
                         piece.x += offsetX
                         piece.y += offsetY
                         pieceLeft += offsetX
                         pieceRight += offsetX
                         pieceBottomRowIndex += offsetY
-                        // Is it in-bound?  Is there collision?  Is it already seen?
+                        // Is it in-bound?  Is there collision?
+                        // Then it's a successful spin
                         if pieceBottomRowIndex >= 0,
                            pieceLeft >= 0,
                            pieceRight < 10,
-                           (pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex] == 0,
-                           case (true, _) = foundPlacementCodes.insert(piece.isomorphicCode) {
-                            // is it landed?
-                            if pieceBottomRowIndex == 0 || ((pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex - 1]) != 0 {
+                           (pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex] == 0 {
+                            // Is it already seen?  Is it landed?
+                            if case (true, _) = foundPlacementCodes.insert(piece.isomorphicCode),
+                                (pieceBottomRowIndex == 0 ||
+                                ((pieceMask << pieceLeft) & lineMasks[pieceBottomRowIndex - 1]) != 0) {
                                 placements.append(piece)
                                 stack.append(piece)
-                                break
                             }
+                            break
                         }
                     }
                 }
-                
+
                 // turn left
 //                newPiece.orientation = piece.orientation.rotatedLeft()
 //                stack.append(newPiece)
@@ -323,6 +329,29 @@ private extension Piece {
         let pieceBottom = y - boundOffsets.bottom
         let pieceMask = wholePieceBitmasks[index] << pieceLeft
         return pieceMask * 10 + pieceBottom
+    }
+
+    var isomorphicPiece: Piece? {
+        var copy = self
+        switch type {
+        case .S, .Z, .I:
+            switch orientation {
+            case .up:
+                copy.orientation = .down
+                copy.y += 1
+            case .down:
+                copy.orientation = .up
+                copy.y -= 1
+            case .right:
+                copy.orientation = .left
+                copy.x += 1
+            case .left:
+                copy.orientation = .right
+                copy.x -= 1
+            }
+            return copy
+        case .J, .L, .T, .O: return nil
+        }
     }
 }
 

@@ -280,12 +280,12 @@ final class FieldTests: XCTestCase {
         ]
         let field = Field(storage: storage)
 
-        let noSlides = field.findAllPlacements(for: [.T])
-        let withSlides = field.findAllPlacements(for: [.T], slidesAndTwists: true)
-        XCTAssertGreaterThan(withSlides.count, noSlides.count)
+        let noSpins = field.findAllPlacements(for: [.T])
+        let withSpins = field.findAllPlacements(for: [.T], slidesAndTwists: true)
+        XCTAssertGreaterThan(withSpins.count, noSpins.count)
 
         let piece = Piece(type: .T, x: 2, y: 1, orientation: .down)
-        XCTAssertTrue(withSlides.contains(piece))
+        XCTAssertTrue(withSpins.contains(piece))
     }
 
     func testFieldFindsTwoTurnTSpin() {
@@ -297,15 +297,73 @@ final class FieldTests: XCTestCase {
         ]
         let field = Field(storage: storage)
 
-        let noSlides = field.findAllPlacements(for: [.T])
-        let withSlides = field.findAllPlacements(for: [.T], slidesAndTwists: true)
-        XCTAssertEqual(withSlides.count, noSlides.count + 3)
+        let noSpins = field.findAllPlacements(for: [.T])
+        let withSpins = field.findAllPlacements(for: [.T], slidesAndTwists: true)
+        XCTAssertEqual(withSpins.count, noSpins.count + 3)
 
         let piece = Piece(type: .T, x: 2, y: 1, orientation: .right)
-        XCTAssertTrue(withSlides.contains(piece))
+        XCTAssertTrue(withSpins.contains(piece))
     }
 
-//    func testFieldFindsLidlessSZSpins() {
-//
-//    }
+    func testFieldFindsLidlessSSpins() {
+        let storage1: [Int16] = [
+            0b11011_11100,
+            0b11110_11001,
+            0b10001_10000,
+            0b00011_10000,
+        ]
+        let storage2: [Int16] = [
+            0b11011_11111,
+            0b11101_11001,
+            0b10010_10011,
+            0b00110_10000,
+        ]
+        let field1 = Field(storage: storage1) // a slide, and a spin
+        let field2 = Field(storage: storage2)
+
+        let noSpins1 = field1.findAllPlacements(for: [.S])
+        let withSpins1 = field1.findAllPlacements(for: [.S], slidesAndTwists: true)
+        XCTAssertEqual(withSpins1.count, noSpins1.count + 2)
+        let difference1 = withSpins1.filter { !noSpins1.contains($0) }
+        XCTAssertEqual(difference1.count, 2)
+        print(difference1)
+
+        let noSpins2 = field2.findAllPlacements(for: [.S])
+        let withSpins2 = field2.findAllPlacements(for: [.S], slidesAndTwists: true)
+        XCTAssertEqual(withSpins2.count, noSpins2.count + 2)
+        let difference2 = withSpins2.filter { !noSpins2.contains($0) }
+        XCTAssertEqual(difference2.count, 2)
+        print(difference2)
+    }
+
+    func testFieldFindsLidlessZSpins() {
+        let storage1: [Int16] = [
+            0b11011_11111,
+            0b11110_11111,
+            0b10011_00000,
+            0b11001_10000,
+        ]
+        let storage2: [Int16] = [
+            0b11011_11111,
+            0b11101_10011,
+            0b00110_11001,
+            0b10000_10000,
+        ]
+        let field1 = Field(storage: storage1) // a slide, and a spin
+        let field2 = Field(storage: storage2)
+
+        let noSpins1 = field1.findAllPlacements(for: [.Z])
+        let withSpins1 = field1.findAllPlacements(for: [.Z], slidesAndTwists: true)
+        XCTAssertEqual(withSpins1.count, noSpins1.count + 2)
+        let difference1 = withSpins1.filter { !noSpins1.contains($0) }
+        XCTAssertEqual(difference1.count, 2)
+        print(difference1)
+
+        let noSpins2 = field2.findAllPlacements(for: [.Z])
+        let withSpins2 = field2.findAllPlacements(for: [.Z], slidesAndTwists: true)
+        XCTAssertEqual(withSpins2.count, noSpins2.count + 2)
+        let difference2 = withSpins2.filter { !noSpins2.contains($0) }
+        XCTAssertEqual(difference2.count, 2)
+//        print(difference2)
+    }
 }
