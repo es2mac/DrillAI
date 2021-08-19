@@ -29,13 +29,15 @@ public struct GameState {
     static let defaultGarbageCount = 8
 
     let environment: DigEnvironment
+    let slidesAndTwists: Bool
     public let field: Field
     public let hold: Tetromino?
     public let dropCount: Int
     public let garbageCleared: Int
 
-    public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil) {
+    public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil, slidesAndTwists: Bool = true) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
+        self.slidesAndTwists = slidesAndTwists
 
         let storage: [Int16] = environment.garbages.suffix(Self.defaultGarbageCount)
         self.field = Field(storage: storage, garbageCount: storage.count)
@@ -45,8 +47,9 @@ public struct GameState {
         self.garbageCleared = 0
     }
 
-    private init(environment: DigEnvironment, field: Field, hold: Tetromino?, dropCount: Int, garbageCleared: Int) {
+    private init(environment: DigEnvironment, field: Field, hold: Tetromino?, dropCount: Int, garbageCleared: Int, slidesAndTwists: Bool) {
         self.environment = environment
+        self.slidesAndTwists = slidesAndTwists
         self.field = field
         self.hold = hold
         self.dropCount = dropCount
@@ -72,7 +75,7 @@ public extension GameState {
         if field.garbageCount == 0 {
             return []
         }
-        return field.findAllPlacements(for: playablePieces)
+        return field.findAllPlacements(for: playablePieces, slidesAndTwists: slidesAndTwists)
     }
 
     func getNextState(for piece: Piece) -> GameState {
@@ -85,7 +88,7 @@ public extension GameState {
         newField = fieldReplenishedWithGarbage(newField)
         let newHold = (piece.type == playPieceType) ? hold : playPieceType
 
-        return GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared)
+        return GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared, slidesAndTwists: slidesAndTwists)
     }
 }
 
