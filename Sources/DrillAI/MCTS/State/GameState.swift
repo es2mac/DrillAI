@@ -35,7 +35,7 @@ public struct GameState {
     public let dropCount: Int
     public let garbageCleared: Int
 
-    public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil, slidesAndTwists: Bool = true) {
+    public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil, slidesAndTwists: Bool = false) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
         self.slidesAndTwists = slidesAndTwists
 
