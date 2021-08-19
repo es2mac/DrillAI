@@ -1,22 +1,7 @@
 
 ## Possible next steps
 
-- Twist and slide moves
-    - Implement SRS wallkicks
-    - "Hinge" detection as a fast first-screen
-        Check for 2x2 shape with only top left or right filled
-        ```
-        O _          _ O
-        _ _    or    _ _
-        ```
-    - Only check from natural drop positions, and not hanging in midair
-        - Searching from existing list of moves has a flaw, that is the S/Z/I
-          pieces don't have separate L/R rotations for same positions
-        - Graph search with natural drops as starting points, use the working
-          array with pointer like a queue, plus a Set
-
 - Record game in-memory and long-term
-    - Core Data?
     - Add controls, e.g. replay history
     - Two seeds, history of move pieces
         - These are enough to programmatically recreate the game
@@ -69,5 +54,9 @@
     - Python: train and export coreml model
     - Swift: load coreml model
     - Swift: convert current state to model input
+
+- Twist and slide moves
+    - Profile the performance impact (it's very heavy.)
+    - Revisit logic to see how to improve the code and efficiency
 
 
