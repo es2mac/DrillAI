@@ -17,7 +17,6 @@ difference between this repository and the last one is that the code has been
 more rigorously engineered with additional functionalities.  Some parts, in
 particular those related to machine learning, are still work in progress.
 
-There's also a complementary iOS UI project, [DrillUI](https:
-//github.com/es2mac/DrillUI).
+There's also a complementary iOS UI project, [DrillUI](https://github.com/es2mac/DrillUI).
 
 
