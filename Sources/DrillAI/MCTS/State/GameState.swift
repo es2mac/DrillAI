@@ -8,22 +8,6 @@
 import Foundation
 
 
-/*
- Hold should be optional, play piece might not be stored directly but rather as an
- index for fetching from a referenced game object with piece sequence
-
- From the outside, a caller doesn't really need to know what's held, as long as the
- state can properly figure out what are the possible next actions.  E.g. when hold
- is nil, we can actually play the next two pieces.
-
- Suppose the piece and garbage generators are outside, and the state's field may
- only be a partial portion near the top, I might need a reference pointer back to
- something that manages the game.
-
- Evaluation will also need the garbage cleared count and the step, because in addition
- to how easy it is to clear many lines from this point on, I also want to consider how
- well it's been doing prior (as this is not like Go, where only the end result matters).
- */
 public struct GameState {
 
     static let defaultGarbageCount = 8
