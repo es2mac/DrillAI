@@ -13,24 +13,52 @@ public final class GameRecorder {
 
     private let initiatedDate: Date = Date()
 
-    // There should always be 1 more states than actions or search results
-    public private(set) var states: [GameState]
-    public private(set) var actions: [Piece]
-    public private(set) var searchResults: [[ActionVisits]]
+    // Each earch result & action should have a corresponding state, but not
+    // vice versa.  Generally there would be one more state than the other two.
+    private(set) var states: [GameState]
+    private(set) var searchResults: [[ActionVisits]]
+    private(set) var actions: [Piece]
+
+    // Step is the index of the current state.
+    public private(set) var step: Int = 0 {
+        didSet {
+            if step < 0 {
+                step = 0
+            } else if step >= states.count {
+                step = states.count - 1
+            }
+        }
+    }
 
     public init(initialState: GameState) {
         self.states = [initialState]
-        self.actions = []
         self.searchResults = []
+        self.actions = []
     }
 }
 
 
 public extension GameRecorder {
     func log(searchResult: [ActionVisits], action: Piece, newState: GameState) {
+        if states.count - 1 > step {
+            states.replaceSubrange((step + 1)..., with: [])
+            searchResults.replaceSubrange(step..., with: [])
+            actions.replaceSubrange(step..., with: [])
+        }
         searchResults.append(searchResult)
         actions.append(action)
         states.append(newState)
+        step += 1
+    }
+
+    func stepForward() -> (state: GameState, searchResult: [ActionVisits]?) {
+        step += 1
+        return stateAtCurrentStep()
+    }
+
+    func stepBackward() -> (state: GameState, searchResult: [ActionVisits]?) {
+        step -= 1
+        return stateAtCurrentStep()
     }
 
     // Export results
@@ -38,6 +66,10 @@ public extension GameRecorder {
 
 
 private extension GameRecorder {
+    func stateAtCurrentStep() -> (state: GameState, searchResult: [ActionVisits]?) {
+        (state: states[step], searchResult: (step < searchResults.count) ? searchResults[step] : nil)
+    }
+
     /// The environment contains the seeds & garbages
     var environment: DigEnvironment {
         states[0].environment
