@@ -20,14 +20,9 @@ public final class GameRecorder {
     private(set) var actions: [Piece]
 
     // Step is the index of the current state.
-    public private(set) var step: Int = 0 {
-        didSet {
-            if step < 0 {
-                step = 0
-            } else if step >= states.count {
-                step = states.count - 1
-            }
-        }
+    public private(set) var step: Int = 0
+    public var lastStep: Int {
+        states.count - 1
     }
 
     public init(initialState: GameState) {
@@ -51,12 +46,18 @@ public extension GameRecorder {
         step += 1
     }
 
-    func stepForward() -> (state: GameState, searchResult: [ActionVisits]?) {
+    func stepForward() -> (state: GameState, searchResult: [ActionVisits]?)? {
+        guard step < lastStep else {
+            return nil
+        }
         step += 1
         return stateAtCurrentStep()
     }
 
-    func stepBackward() -> (state: GameState, searchResult: [ActionVisits]?) {
+    func stepBackward() -> (state: GameState, searchResult: [ActionVisits]?)? {
+        guard step > 0 else {
+            return nil
+        }
         step -= 1
         return stateAtCurrentStep()
     }
