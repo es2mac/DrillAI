@@ -8,6 +8,9 @@
 import Foundation
 
 
+public typealias GameRecord = Drillai_GameRecord
+
+
 public final class GameRecorder {
     public typealias ActionVisits = MCTSTree<GameState>.ActionVisits
 

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package drillai;
+
+message GameRecord {
+  message RecordStep {
+    repeated bool fieldCells = 1;    // 10 x 20 = 200
+    repeated fixed32 tetrominos = 2; // 2 playable + 4~5 previews
+    repeated fixed32 actions = 3;    // special coding in 10 x 20 x (4 x 2)
+    repeated float priors = 4;       // root's child Ns normalized
+    float value = 5;                 // # clears-per-piece in 14 moves
+  }
+
+  fixed64 garbageSeed = 1;
+  fixed64 pieceSeed = 2;
+  repeated fixed32 playedPieces = 3; // as piece codes
+  repeated RecordStep steps = 4;
+}
