@@ -8,25 +8,6 @@
 import Foundation
 
 
-// Use matplotlib to draw the field
-
-//func draw(_ field: Field) {
-//  let filledBlocks = np.array(field.storage.map { number in
-//    (0..<10).map { i in number & (1 << i) == 0 }
-//  })
-//
-//  plt.figure(figsize: [5, 8])
-//
-//  let ax = plt.gca()
-//  let im = ax.imshow(filledBlocks, cmap: "gray", vmin: -0.2, vmax: 1.2)
-//
-//  ax.set_xticks(np.arange(filledBlocks.shape[1]+1) - 0.5, minor: true)
-//  ax.set_yticks(np.arange(filledBlocks.shape[0]+1) - 0.5, minor: true)
-//  ax.grid(which: "minor", color: "w", linestyle: "-", linewidth: 3)
-//  ax.invert_yaxis()
-//
-//  plt.show()
-//}
 
 
 /*
