@@ -18,6 +18,8 @@ public struct GameState {
     public let hold: Tetromino?
     public let dropCount: Int
     public let garbageCleared: Int
+    public var garbageTotal: Int { environment.garbages.count }
+    public var garbageRemaining: Int { environment.garbages.count - garbageCleared }
 
     public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil, slidesAndTwists: Bool = false) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
