@@ -21,15 +21,17 @@ public final class GameRecorder {
 
     // Each earch result & action should have a corresponding state, but not
     // vice versa.  Generally there would be one more state than the other two.
-    private(set) var states: [GameState]
-    private(set) var searchResults: [[ActionVisits]]
-    private(set) var actions: [Piece]
+    private var states: [GameState] {
+        // Don't read count directly, to prevent race condition
+        didSet { lastStep = states.count - 1 }
+    }
+    private var lastStep: Int = 0
+    private var searchResults: [[ActionVisits]]
+    private var actions: [Piece]
 
     // Step is the index of the current state.
     public private(set) var step: Int = 0
-    public var lastStep: Int {
-        states.count - 1
-    }
+    public var isAtLastStep: Bool { step == lastStep }
 
     public init(initialState: GameState) {
         self.states = [initialState]
