@@ -20,3 +20,13 @@ particular those related to machine learning, are still work in progress.
 There's also a complementary iOS UI project, [DrillUI](https://github.com/es2mac/DrillUI).
 
 
+## ML Model generation
+
+To include CoreML models in a Swift package, we need to compile the models, as
+well as adding them as resources in the package.
+```
+xcrun coremlcompiler compile MyModel.mlmodel .
+xcrun coremlcompiler generate MyModel.mlmodel . --language Swift
+```
+
+
