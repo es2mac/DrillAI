@@ -12,14 +12,17 @@ public struct GameState {
 
     static let defaultGarbageCount = 8
 
-    let environment: DigEnvironment
-    let slidesAndTwists: Bool
     public let field: Field
     public let hold: Tetromino?
     public let dropCount: Int
     public let garbageCleared: Int
     public var garbageTotal: Int { environment.garbages.count }
     public var garbageRemaining: Int { environment.garbages.count - garbageCleared }
+
+    let environment: DigEnvironment
+    let slidesAndTwists: Bool
+    var referenceStep: Int = 0
+    var referenceGarbageCleared: Int = 0
 
     public init(garbageCount: Int, garbageSeed: UInt64? = nil, pieceSeed: UInt64? = nil, slidesAndTwists: Bool = false) {
         self.environment = DigEnvironment(garbageCount: garbageCount, garbageSeed: garbageSeed, pieceSeed: pieceSeed)
@@ -74,7 +77,10 @@ public extension GameState {
         newField = fieldReplenishedWithGarbage(newField)
         let newHold = (piece.type == playPieceType) ? hold : playPieceType
 
-        return GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared, slidesAndTwists: slidesAndTwists)
+        var newState = GameState(environment: environment, field: newField, hold: newHold, dropCount: dropCount + 1, garbageCleared: newGarbageCleared, slidesAndTwists: slidesAndTwists)
+        newState.referenceStep = referenceStep
+        newState.referenceGarbageCleared = referenceGarbageCleared
+        return newState
     }
 }
 
@@ -84,13 +90,21 @@ extension GameState {
         environment.garbages.count - garbageCleared
     }
 
-    private var playablePieces: [Tetromino] {
+    mutating func setAsReference() {
+        referenceStep = dropCount
+        referenceGarbageCleared = garbageCleared
+    }
+}
+
+
+private extension GameState {
+    var playablePieces: [Tetromino] {
         let piece1 = hold ?? environment.pieces[dropCount]
         let piece2 = environment.pieces[dropCount + 1]
         return (piece1 == piece2) ? [piece1] : [piece1, piece2]
     }
 
-    private func fieldReplenishedWithGarbage(_ newField: Field) -> Field {
+    func fieldReplenishedWithGarbage(_ newField: Field) -> Field {
         let wantedAddCount = Self.defaultGarbageCount - newField.garbageCount
         let hiddenLineCount = environment.garbages.count - garbageCleared - field.garbageCount
         guard wantedAddCount > 0, hiddenLineCount > 0 else {

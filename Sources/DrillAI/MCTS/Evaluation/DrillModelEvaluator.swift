@@ -33,18 +33,12 @@ extension DrillModelEvaluator: MCTSEvaluator {
 
         return zip(info, outputs).map { item, output in
             (id: item.id,
-             value: Double(output.var_205[0]),
+             value: calculateValue(modelValue: output.var_205[0].doubleValue,
+                                   state: item.state),
              priors: calculatePriors(logits: output.var_186,
                                      playPieceType: item.state.playPieceType,
                                      actions: item.nextActions))
         }
-    }
-}
-
-extension DrillModelEvaluator {
-    func evaluate(_ shapedArray: MLShapedArray<Float32>) -> DrillModelCoreMLOutput? {
-        let x = try? model.prediction(input: shapedArray)
-        return x
     }
 }
 
@@ -75,6 +69,19 @@ extension DrillModelEvaluator {
         return shapedArray
     }
 
+    /// Value is calculated as the efficiency from past + future.
+    /// Future efficiency is an estimate converted from the ML model output,
+    /// i.e. modelValue (as an efficiency of clears per piece, for either 14
+    /// drops or till the end of that game).
+    func calculateValue(modelValue: Double, state: GameState) -> Double {
+        let pastCount = Double(state.dropCount - state.referenceStep)
+        let pastClears = Double(state.garbageCleared - state.referenceGarbageCleared)
+        let futureClears = min(14 * modelValue, Double(state.garbageRemaining))
+        let futureCount = futureClears / modelValue
+
+        return (pastClears + futureClears) / (pastCount + futureCount)
+    }
+
     func calculatePriors(logits: MLMultiArray,
                          playPieceType: Tetromino,
                          actions: [Piece]) -> [Double] {
@@ -92,7 +99,7 @@ extension DrillModelEvaluator {
 
         // Ad-hoc tweak:  Prior values are too extreme, smooth them out
         let minimum = vDSP.minimum(values)
-        vDSP.divide(values, -minimum, result: &values)
+        vDSP.divide(values, -0.5 * minimum, result: &values)
 
         // The rest is the usual
         vForce.exp(values, result: &values)

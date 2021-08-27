@@ -67,7 +67,8 @@ public extension GeneratorBot {
 
     func advance(with action: Action) async -> State {
         stopThinking()
-        let newState = await tree.promoteRoot(action: action)
+        var newState = await tree.promoteRoot(action: action)
+        newState.setAsReference()
         return newState
     }
 }

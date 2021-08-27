@@ -94,7 +94,35 @@ final class GameStateTests: XCTestCase {
         XCTAssertEqual(state.dropCount, 6)
         XCTAssertEqual(state.garbageCleared, 3)
         XCTAssertEqual(state.field.garbageCount, 8)
-//        print(state.field)
-//        print(state.playPieceType, state.hold as Any)
+    }
+
+    func testNextStateInheritReferences() throws {
+        // Piece seed 1 => [Z, L, S, J, T, I, O, O, J, T, Z, I, S, L]
+        var state = GameState(garbageCount: 100, garbageSeed: 1, pieceSeed: 1)
+
+        var piece = Piece(type: .L, x: 8, y: 8, orientation: .down)
+        state = state.getNextState(for: piece)
+        XCTAssertEqual(state.referenceStep, 0)
+        XCTAssertEqual(state.referenceGarbageCleared, 0)
+
+        state.setAsReference()
+        XCTAssertEqual(state.referenceStep, 1)
+        XCTAssertEqual(state.referenceGarbageCleared, 1)
+
+        piece = Piece(type: .S, x: 6, y: 8, orientation: .up)
+        state = state.getNextState(for: piece)
+
+        piece = Piece(type: .J, x: 1, y: 8, orientation: .up)
+        state = state.getNextState(for: piece)
+
+        piece = Piece(type: .Z, x: 3, y: 8, orientation: .up)
+        state = state.getNextState(for: piece)
+
+        piece = Piece(type: .T, x: 9, y: 8, orientation: .left)
+        state = state.getNextState(for: piece)
+        XCTAssertEqual(state.dropCount, 5)
+        XCTAssertEqual(state.garbageCleared, 2)
+        XCTAssertEqual(state.referenceStep, 1)
+        XCTAssertEqual(state.referenceGarbageCleared, 1)
     }
 }
