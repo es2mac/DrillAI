@@ -17,6 +17,45 @@ final class DrillModelEvaluatorTests: XCTestCase {
         XCTAssertNoThrow(_ = try DrillModelEvaluator(modelURL: url))
     }
 
+    func testEvaluatorHandlesGameOverStates() async throws {
+        let bundle = Bundle(for: DrillModelCoreML.self)
+        let url = bundle.url(forResource: "DrillModelCoreML",
+                             withExtension: "mlmodelc",
+                             subdirectory: "DrillAI_DrillAI.bundle"
+        )!
+
+        let evaluator = try DrillModelEvaluator(modelURL: url)
+
+        // Borrowed from GameStateTests
+        // Piece seed 1 => [Z, L, S, J, T, I, O, O, J, T, Z, I, S, L]
+        let initialState = GameState(garbageCount: 100, garbageSeed: 1, pieceSeed: 1)
+        var state = initialState
+        for _ in 0 ..< 7 {
+            state = state.getNextState(for: state.getLegalActions()[0])
+        }
+        XCTAssertGreaterThan(state.field.height, 18)
+
+        let gameOverState = state
+
+        let initialNode = MCTSNode(state: initialState)
+        let gameOverNode = MCTSNode(state: gameOverState)
+
+        let info = [(id: initialNode.id, state: initialState, nextActions: initialState.getLegalActions()),
+                    (id: gameOverNode.id, state: gameOverState, nextActions: gameOverState.getLegalActions())
+        ]
+
+        let evaluations = await evaluator.evaluate(info: info)
+        XCTAssertEqual(evaluations.count, 2)
+
+        let initialEvaluation = evaluations.first { $0.id == initialNode.id }!
+        XCTAssertNotNil(initialEvaluation.priors)
+        XCTAssertNotEqual(initialEvaluation.value, -1)
+        
+        let gameOverEvaluation = evaluations.first { $0.id == gameOverNode.id }!
+        XCTAssertNil(gameOverEvaluation.priors)
+        XCTAssertEqual(gameOverEvaluation.value, -1)
+    }
+
 //    func testTest() async throws {
 //        let bundle = Bundle(for: DrillModelCoreML.self)
 //        let url = bundle.url(forResource: "DrillModelCoreML",

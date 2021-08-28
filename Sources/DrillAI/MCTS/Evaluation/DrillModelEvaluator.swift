@@ -28,16 +28,27 @@ extension DrillModelEvaluator: MCTSEvaluator {
     public typealias State = GameState
 
     public func evaluate(info: MCTSTree<State>.StatesInfo) async -> MCTSTree.EvaluationResults {
-        let inputs = info.map(\.state).map(encode(state:)).map(DrillModelCoreMLInput.init)
+        let gameOverItems = info.filter { $0.state.field.height > 18}
+        let validItems = gameOverItems.isEmpty ? info : info.filter { $0.state.field.height <= 18 }
+
+        let inputs = validItems.map(\.state).map(encode(state:)).map(DrillModelCoreMLInput.init)
         let outputs = try! model.predictions(inputs: inputs)
 
-        return zip(info, outputs).map { item, output in
+        let validEvaluations = zip(info, outputs).map { item, output in
             (id: item.id,
              value: calculateValue(modelValue: output.var_205[0].doubleValue,
                                    state: item.state),
              priors: calculatePriors(logits: output.var_186,
                                      playPieceType: item.state.playPieceType,
                                      actions: item.nextActions))
+        }
+
+        if gameOverItems.isEmpty {
+            return validEvaluations
+        } else {
+            return validEvaluations + gameOverItems.map {
+                (id: $0.id, value: -1, priors: nil)
+            }
         }
     }
 }
