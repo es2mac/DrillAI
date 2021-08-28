@@ -77,7 +77,8 @@ public extension GameRecorder {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
             let dateString = dateFormatter.string(from: initiatedDate)
-            let fileName = dateString + " \(states[0].garbageTotal)L \(lastStep)p"
+            let gameOverTag = states.last!.garbageRemaining == 0 ? "" : "X"
+            let fileName = dateString + " \(states[0].garbageTotal)L \(lastStep)p\(gameOverTag)"
             path.appendPathComponent(fileName)
             path.appendPathExtension("pb")
             try data.write(to: path)
