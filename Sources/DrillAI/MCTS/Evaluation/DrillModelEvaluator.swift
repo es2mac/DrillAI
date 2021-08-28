@@ -78,8 +78,13 @@ extension DrillModelEvaluator {
         let pastClears = Double(state.garbageCleared - state.referenceGarbageCleared)
         let futureClears = min(14 * modelValue, Double(state.garbageRemaining))
         let futureCount = futureClears / modelValue
+        let value = (pastClears + futureClears) / (pastCount + futureCount)
 
-        return (pastClears + futureClears) / (pastCount + futureCount)
+        // As of the first iteration, value is around 0.1 ~ 0.4
+        // Try take 0 ~ 0.5 to -1 ~ 1
+        let scaledValue = max(0, min(2, value * 4)) - 1
+
+        return scaledValue
     }
 
     func calculatePriors(logits: MLMultiArray,
@@ -98,8 +103,8 @@ extension DrillModelEvaluator {
         vDSP.add(-maximum, values, result: &values)
 
         // Ad-hoc tweak:  Prior values are too extreme, smooth them out
-        let minimum = vDSP.minimum(values)
-        vDSP.divide(values, -0.5 * minimum, result: &values)
+        let minimum = min(-0.25, vDSP.minimum(values))
+        vDSP.divide(values, -0.25 * minimum, result: &values)
 
         // The rest is the usual
         vForce.exp(values, result: &values)
