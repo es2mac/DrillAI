@@ -93,7 +93,9 @@ public extension GameRecorder {
             record.garbageSeed = environment.garbageSeed
             record.pieceSeed = environment.pieceSeed
             record.playedPieces = actions.map(\.code).map(UInt32.init)
-            record.steps = (0 ..< actions.count).map(encodeStep)
+            record.steps = (0 ..< actions.count)
+                .filter { states[$0].field.height <= 20 }
+                .map(encodeStep)
         }
         return try! record.serializedData()
     }
