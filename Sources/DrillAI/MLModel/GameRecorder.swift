@@ -77,7 +77,8 @@ public extension GameRecorder {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "yyyy-MM-dd HH-mm-ss"
             let dateString = dateFormatter.string(from: initiatedDate)
-            let fileName = dateString + " \(states[0].garbageTotal)L \(lastStep)p"
+            let gameOverTag = states.last!.garbageRemaining == 0 ? "" : "X"
+            let fileName = dateString + " \(states[0].garbageTotal)L \(lastStep)p\(gameOverTag)"
             path.appendPathComponent(fileName)
             path.appendPathExtension("pb")
             try data.write(to: path)
@@ -93,7 +94,9 @@ public extension GameRecorder {
             record.garbageSeed = environment.garbageSeed
             record.pieceSeed = environment.pieceSeed
             record.playedPieces = actions.map(\.code).map(UInt32.init)
-            record.steps = (0 ..< actions.count).map(encodeStep)
+            record.steps = (0 ..< actions.count)
+                .filter { states[$0].field.height <= 20 }
+                .map(encodeStep)
         }
         return try! record.serializedData()
     }

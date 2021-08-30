@@ -24,6 +24,7 @@ let package = Package(
             exclude: ["MLModel/GameRecord/README.md",
                       "MLModel/GameRecord/DrillGameRecord.proto",
                       "MLModel/GameRecord/DrillGameRecord_pb2.py"],
+            resources: [.process("MLModel/CompiledDrillModel/DrillModelCoreML.mlmodelc")],
             swiftSettings: [
                 .unsafeFlags(["-Xfrontend", "-disable-availability-checking"])
             ]),

@@ -326,14 +326,12 @@ final class FieldTests: XCTestCase {
         XCTAssertEqual(withSpins1.count, noSpins1.count + 2)
         let difference1 = withSpins1.filter { !noSpins1.contains($0) }
         XCTAssertEqual(difference1.count, 2)
-        print(difference1)
 
         let noSpins2 = field2.findAllPlacements(for: [.S])
         let withSpins2 = field2.findAllPlacements(for: [.S], slidesAndTwists: true)
         XCTAssertEqual(withSpins2.count, noSpins2.count + 2)
         let difference2 = withSpins2.filter { !noSpins2.contains($0) }
         XCTAssertEqual(difference2.count, 2)
-        print(difference2)
     }
 
     func testFieldFindsLidlessZSpins() {
@@ -357,7 +355,6 @@ final class FieldTests: XCTestCase {
         XCTAssertEqual(withSpins1.count, noSpins1.count + 2)
         let difference1 = withSpins1.filter { !noSpins1.contains($0) }
         XCTAssertEqual(difference1.count, 2)
-        print(difference1)
 
         let noSpins2 = field2.findAllPlacements(for: [.Z])
         let withSpins2 = field2.findAllPlacements(for: [.Z], slidesAndTwists: true)
