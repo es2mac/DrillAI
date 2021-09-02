@@ -220,7 +220,7 @@ private extension MCTSTree {
         while let (_, entry) = virtualLosses.popFirst() {
             backPropagate(from: entry.0,
                           value: -entry.1,
-                          visits: 0)
+                          visits: -1)
         }
     }
 
