@@ -13,6 +13,11 @@ public actor MCTSTree<State: MCTSState> {
     typealias Node = MCTSNode<State>
 
     private var root: Node
+
+    /// Virtual loss is added for a node (using its id as key) every time it is
+    /// selecetd for evaluation.  The virtual loss is reversed when the
+    /// evaluation comes back.  This can also be thought of as a record of all
+    /// nodes waiting for evaluation.
     private var virtualLosses: [ObjectIdentifier : (Node, Double)] = [:]
 
     public init(initialState: State) {
@@ -156,9 +161,26 @@ private extension MCTSTree {
     /// has no child.
     func getBestSearchTargetNode() -> Node {
         var node = root
-        while let nextNode = node.getBestSearchTargetChild() {
-            node = nextNode
+
+    loop: while true {
+        switch node.status {
+        case .initial:
+            break loop
+        case .expanded:
+            if let _ = virtualLosses[node.id] {
+                fallthrough
+            } else {
+                break loop
+            }
+        case .evaluated:
+            if let nextNode = node.getBestSearchTargetChild() {
+                node = nextNode
+            } else {
+                break loop
+            }
         }
+    }
+
         return node
     }
 
