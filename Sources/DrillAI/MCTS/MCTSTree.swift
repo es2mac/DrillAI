@@ -12,6 +12,7 @@ public actor MCTSTree<State: MCTSState> {
     public typealias Action = State.Action
     typealias Node = MCTSNode<State>
 
+    /// The root should always be at least expanded
     private var root: Node
 
     /// Virtual loss is added for a node (using its id as key) every time it is
@@ -22,6 +23,7 @@ public actor MCTSTree<State: MCTSState> {
 
     public init(initialState: State) {
         root = Node(state: initialState)
+        root.expand()
     }
 }
 
@@ -40,14 +42,6 @@ extension MCTSTree {
     /// See the best actions so far, ordered by visit counts.  Empty when there is
     /// no action, i.e. terminal state.
     func getOrderedRootActions() -> [ActionVisits] {
-        if case .initial = root.status {
-            // Don't expand here, because it'll skip root for getting evaluated,
-            // and the root will be stuck at .expanded status, then it'll always
-            // choose a random child for evaluation
-            return root.state.getLegalActions().map {
-                ActionVisits(action: $0, visits: 0)
-            }
-        }
         return zip(root.nextActions, root.childN)
             .sorted { $0.1 > $1.1 }
             .map { ActionVisits(action: $0, visits: Int($1)) }
@@ -62,10 +56,6 @@ extension MCTSTree {
     func promoteRoot(action: Action) -> State where Action: Equatable {
         cancelOutstandingEvaluations()
 
-        if case .initial = root.status {
-            root.expand()
-        }
-
         if let index = root.nextActions.index(of: action) {
             let child = root.getOrInitializeChildNode(at: index)
             // Hackery to move large tree deallocation to the background
@@ -73,6 +63,9 @@ extension MCTSTree {
             Task.detached(priority: .medium) { _ = oldRoot }
             root = child
             root.removeParent()
+            if case .initial = root.status {
+                root.expand()
+            }
         } else {
             assertionFailure("Not a valid next action")
         }
@@ -162,24 +155,24 @@ private extension MCTSTree {
     func getBestSearchTargetNode() -> Node {
         var node = root
 
-    loop: while true {
-        switch node.status {
-        case .initial:
-            break loop
-        case .expanded:
-            if let _ = virtualLosses[node.id] {
-                fallthrough
-            } else {
+        loop: while true {
+            switch node.status {
+            case .initial:
                 break loop
-            }
-        case .evaluated:
-            if let nextNode = node.getBestSearchTargetChild() {
-                node = nextNode
-            } else {
-                break loop
+            case .expanded:
+                if let _ = virtualLosses[node.id] {
+                    fallthrough
+                } else {
+                    break loop
+                }
+            case .evaluated:
+                if let nextNode = node.getBestSearchTargetChild() {
+                    node = nextNode
+                } else {
+                    break loop
+                }
             }
         }
-    }
 
         return node
     }
