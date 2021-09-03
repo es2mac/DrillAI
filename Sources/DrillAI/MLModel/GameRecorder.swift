@@ -138,8 +138,12 @@ private extension GameRecorder {
 
         // Value as efficiency of next (up to) 14 piece drops
         let laterStateIndex = min(i + 14, states.count - 1)
-        let clearCount = states[laterStateIndex].garbageCleared - state.garbageCleared
-        let value = Float(clearCount) / Float(laterStateIndex - i)
+        let laterState = states[laterStateIndex]
+        let clearCount = laterState.garbageCleared - state.garbageCleared
+        // If the game didn't finish, we'll treat it as if game continues past
+        // the last recorded state without clearing any garbage
+        let span = laterState.garbageRemaining == 0 ? (laterStateIndex - i) : 14
+        let value = Float(clearCount) / Float(span)
 
         return GameRecord.RecordStep.with { step in
             step.fieldCells = fieldCells
